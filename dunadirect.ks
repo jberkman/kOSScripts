@@ -44,7 +44,6 @@ function mainEngineStart {
   }
 }
 
-
 function rollProgram {
   print "Initiating roll program.".
   lock steering to r(0, 0, 180) + heading(90, 90).
