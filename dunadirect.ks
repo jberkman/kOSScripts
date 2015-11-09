@@ -23,11 +23,12 @@
 @lazyglobal off.
 
 function countdown {
+  print "Throttle up.".
   lock throttle to 1.0.
 
   print "Initiating countdown.".
   from {
-    local tMinus is 10.
+    local tMinus is 3.
   } until tMinus = 0 step {
     set tMinus to tMinus - 1.
   } do {
@@ -37,11 +38,8 @@ function countdown {
 }
 
 function mainEngineStart {
-  when maxthrust = 0 then {
-    print "Stage activated.".
-    stage.
-    preserve.
-  }
+  print "Main engine start.".
+  stage.
 }
 
 function rollProgram {
@@ -61,8 +59,8 @@ function initiateGravityTurn {
   global gravityTurnCheckpoints to list(
     list(5000, 67.5),
     list(15000, 45),
-    list(30000, 5),
-    list(50000, 0)
+    list(25000, 22.5),
+    list(35000, 0)
   ).
 
   lock pitch to gravityTurnPitch.
@@ -75,13 +73,13 @@ function initiateGravityTurn {
     set gravityTurnOldAltitude to gravityTurnAltitude.
     set gravityTurnAltitude to gravityTurnCheckpoints[0][0].
 
-    print "Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude.
-
-    lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
-
     if gravityTurnCheckpoints:length > 1 {
+      print "Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude.
+      lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
       gravityTurnCheckpoints:remove(0).
       preserve.
+    } else {
+      lock pitch to 0.
     }
   }
 }
