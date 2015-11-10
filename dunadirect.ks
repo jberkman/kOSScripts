@@ -23,30 +23,35 @@
 @lazyglobal off.
 
 function countdown {
-  print "Throttle up.".
+  hudText("Throttle up.", 5, 2, 15, yellow, true).
   lock throttle to 1.0.
 
-  print "Initiating countdown.".
+  hudText("Initiating countdown.", 1, 2, 15, yellow, true).
   from {
     local tMinus is 3.
   } until tMinus = 0 step {
     set tMinus to tMinus - 1.
   } do {
-    print "..." + tMinus.
+    hudText("..." + tMinus, 1, 2, 15, yellow, true).
     wait 1.
   }
 }
 
 function mainEngineStart {
-  print "Main engine start.".
+  hudText("Main engine start.", 5, 2, 15, yellow, true).
   stage.
+//  when maxthrust = 0 then {
+//    hudText("Staging.", 5, 2, 15, yellow, true).
+//    stage.
+//    preserve.
+//  }
 }
 
 function rollProgram {
-  print "Initiating roll program.".
+  hudText("Initiating roll program.", 5, 2, 15, yellow, true).
   lock steering to r(0, 0, 180) + heading(90, 90).
   when abs(facing:roll - 90) < 1 then {
-    print "Roll program complete.".
+    hudText("Roll program complete.", 5, 2, 15, yellow, true).
   }
 }
 
@@ -58,7 +63,7 @@ function initiateGravityTurn {
 
   global gravityTurnCheckpoints to list(
     list(5000, 67.5),
-    list(15000, 45),
+    list(12500, 45),
     list(25000, 22.5),
     list(35000, 0)
   ).
@@ -73,18 +78,38 @@ function initiateGravityTurn {
     set gravityTurnOldAltitude to gravityTurnAltitude.
     set gravityTurnAltitude to gravityTurnCheckpoints[0][0].
 
+    hudText("Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude, 5, 2, 15, yellow, true).
+    lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
+
     if gravityTurnCheckpoints:length > 1 {
-      print "Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude.
-      lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
       gravityTurnCheckpoints:remove(0).
       preserve.
     } else {
-      lock pitch to 0.
+      when altitude > gravityTurnAltitude then {
+        hudText("Gravity turn complete.", 5, 2, 15, yellow, true).
+        lock pitch to 0. 
+      }
     }
   }
 }
 
+function initiateCoast {
+  hudText("Initiating coast.", 5, 2, 15, yellow, true).
+  global coastPID to PIDLoop(2.5, 2, 0.5, 0, 0.1).
+  set coastPID:setPoint to 80000.
+  lock throttle to 0.
+  when time:seconds - coastPID:lastSampleTime > 0.1 then {
+    print "Adjusting throttle: " + coastPID:output.
+    coastPID:update(time:seconds, apoapsis).
+    preserve.
+  }
+  coastPID:update(time:seconds, apoapsis).
+  lock throttle to coastPID:output.
+}
+
 function launch {
+  global launchComplete is false.
+
   countdown().
   mainEngineStart().
 
@@ -95,9 +120,13 @@ function launch {
     }
   }
 
-  wait until apoapsis > 80000.
+  when apoapsis > 80000 then {
+    initiateCoast().
+  }
 
-  print "80km apoapsis reached, cutting throttle".
+  wait until altitude > 70000.
+
+  hudText("Launch complete.", 5, 2, 15, yellow, true).
 
   lock throttle to 0.
 
