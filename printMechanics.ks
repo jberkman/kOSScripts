@@ -1,6 +1,9 @@
-// The MIT License (MIT)
 //
-// Copyright (c) 2015 jacob berkman
+// printMechanics.ks
+// kOSScripts
+//
+// Created by jacob berkman on 2015-11-11.
+// Copyright © 2015 jacob berkman
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +25,12 @@
 
 @lazyglobal off.
 
-run lib_navball.
+run mechanics.
+run string.
 
-function compassForDir {
-  parameter ves.
-  parameter dir.
-
-  local east is east_for(ves).
-  local vec is dir:forevector.
-
-  local trig_x is vdot(ves:north:vector, vec).
-  local trig_y is vdot(east, vec).
-
-  local result is arctan2(trig_y, trig_x).
-
-  //if result < 0 {
-  //  print "result => " + result.
-  //  return 360 + result.
-  //} else {
-    return result.
-  //}
-}
-
-function pitchForDir {
-  parameter ves.
-  parameter dir.
-
-  return 90 - vang(ves:up:vector, dir:forevector).
-}
+print "velocity: " + velocityOfOrbital(ship).
+print "eccentric anomaly: " + eccentricAnomalyOfOrbit(obt).
+print "mean anomaly: " + meanAnomalyOfOrbit(obt).
+print "mean motion: " + meanMotionOfOrbit(obt).
+print "time to periapsis: " + stringWithTime(timeToPeriapsisOfOrbit(obt)).
+print "time to apoapsis: " +  stringWithTime(timeToApoapsisOfOrbit(obt)).
