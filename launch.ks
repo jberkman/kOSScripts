@@ -94,7 +94,7 @@ function initiateGravityTurn {
 }
 
 function coastThrottle {
-  if apoapsis > coastPID:setPoint {
+  if apoapsis > coastPID:setPoint + 50 {
     return 0.
   }
   return coastPID:update(time:seconds, apoapsis).
