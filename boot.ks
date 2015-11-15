@@ -25,6 +25,6 @@
 
 @lazyglobal off.
 
-for file in list("launch", "lib_navball", "mechanics", "string") {
+for file in list("apoapsisBurn", "launch", "lib_navball", "mechanics", "periapsisBurn", "string") {
 	copy file to 1.
 }

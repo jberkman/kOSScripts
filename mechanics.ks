@@ -131,22 +131,33 @@ function pitchForDir {
 
 // Manouvres
 
-function burnWithDeltaVAtTime {
-  parameter deltaV.
+function burnFromAtAltitudeToAltitudeAtTime {
+  parameter sourceAltitude.
+  parameter targetAltitude.
   parameter t.
-  parameter goalOrbit.
   parameter completion.
 
   global burnWithDeltaVAtTimeCompletion is completion.
 
+  local goalOrbit to sourceAltitude + targetAltitude.
+  local initialVelocity is velocityOfOrbitalAtAltitude(ship, sourceAltitude).
+  local goalVelocity is velocityOfOrbitalAtAltitudeWithSemiMajorAxis(ship, sourceAltitude, body:radius + goalOrbit / 2).
+  local deltaV to goalVelocity - initialVelocity.
+
+  local burnRoll is roll_for(ship).
+  local burnHeading is 0.
+
   if deltaV > 0 {
     lock burnComplete to apoapsis + periapsis >= goalOrbit.
-    lock steering to ship:prograde.
+    set burnHeading to compassForDir(ship, ship:prograde).
+    lock burnPitch to -pitchForDir(ship, ship:prograde).
   } else {
     lock burnComplete to apoapsis + periapsis <= goalOrbit.
-    lock steering to ship:retrograde.
+    set burnHeading to compassForDir(ship, ship:retrograde).
+    lock burnPitch to -pitchForDir(ship, ship:retrograde).
   }
 
+  lock steering to r(0, 0, burnRoll) + heading(burnHeading, burnPitch).
   lock burnStartTime to t - abs(deltaV * ship:mass / ship:availableThrust / 2).
 
   print "deltaV required for circularization: " + round(abs(deltaV)).
@@ -167,21 +178,11 @@ function burnWithDeltaVAtTime {
 function burnAtPeriapsisToAltitude {
   parameter altitude.
   parameter completion.
-
-  local initialVelocity is velocityOfOrbitalAtAltitude(ship, periapsis).
-  local goalVelocity is velocityOfOrbitalAtAltitudeWithSemiMajorAxis(ship, periapsis, body:radius + (periapsis + altitude) / 2).
-
-  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToPeriapsisOfOrbit(obt), periapsis + altitude, completion).
+  burnFromAtAltitudeToAltitudeAtTime(periapsis, altitude, time:seconds + timeToPeriapsisOfOrbit(obt), completion).
 }
 
 function burnAtApoapsisToAltitude {
   parameter altitude.
   parameter completion.
-
-  local initialVelocity is velocityOfOrbitalAtAltitude(ship, apoapsis).
-  local goalVelocity is velocityOfOrbitalAtAltitudeWithSemiMajorAxis(ship, apoapsis, body:radius + (apoapsis + altitude) / 2).
-
-  print "goal velocity: " + goalVelocity.
-
-  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToApoapsisOfOrbit(obt), apoapsis + altitude, completion).
+  burnFromAtAltitudeToAltitudeAtTime(apoapsis, altitude, time:seconds + timeToApoapsisOfOrbit(obt), completion).
 }
