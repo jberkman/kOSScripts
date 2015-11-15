@@ -141,20 +141,24 @@ function pitchForDir {
 function burnWithDeltaVAtTime {
   parameter deltaV.
   parameter t.
+  parameter goalOrbit.
   parameter completion.
 
+  global burnWithDeltaVAtTimeGoalOrbit is goalOrbit.
   global burnWithDeltaVAtTimeCompletion is completion.
 
-  local burnRoll is roll_for(ship).
-  local burnHeading is compass_for(ship).  
-  lock burnPitch to -pitchForDir(ship, ship:prograde).
-  print "pitch: " + burnPitch.
+  global pitchPID is PIDLoop(1, 0, 0, -10, 10).
+  set pitchPID:setPoint to 80000.
+
+  global burnRoll is roll_for(ship).
+  global burnHeading is compass_for(ship).
+  global burnPitch is pitch_for(ship).
 
   lock throttle to 0.
   lock steering to r(0, 0, burnRoll) + heading(burnHeading, burnPitch).
 
-  global circularizationPID is PIDLoop(5, 1, 5, 0, 1).
-  set circularizationPID:setPoint to velocity:orbit:mag + deltaV.
+//  global circularizationPID is PIDLoop(5, 1, 5, 0, 1).
+//  set circularizationPID:setPoint to velocity:orbit:mag + deltaV.
 
   local maxAcceleration is ship:availableThrust / ship:mass.
   local burnDuration is deltaV / maxAcceleration.
@@ -164,11 +168,20 @@ function burnWithDeltaVAtTime {
   print "deltaV required for circularization: " + deltaV.
   print "estimated burn time: " + burnDuration.
 
+  lock pitchInput to apoapsis.
   when time:seconds >= burnStartTime then {
+    when time:seconds - pitchPID:lastSampleTime > 0.1 then {
+      set burnPitch to burnPitch + pitchPID:update(time:seconds, apoapsis).
+      if time:seconds < burnEndTime {
+        preserve.
+      }
+    }
+    //pitchPID:update(time:seconds, apoapsis).
     //circularizationPID:update(time:seconds, velocity:orbit:mag).
     lock throttle to 1.
     //circularizationPID:output.
-    when time:seconds >= burnEndTime then {
+    when abs(apoapsis + periapsis - burnWithDeltaVAtTimeGoalOrbit) < 100 then {
+      print "Burn complete.".
       // - circularizationPID:lastSampleTime > 0.01 then {
       //circularizationPID:update(time:seconds, velocity:orbit:mag).
       //print circularizationPID:setPoint - velocity:orbit:mag.
@@ -201,5 +214,5 @@ function burnAtApoapsisToAltitude {
 
   print "goal velocity: " + goalVelocity.
 
-  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToApoapsisOfOrbit(obt), completion).
+  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToApoapsisOfOrbit(obt), apoapsis + altitude, completion).
 }

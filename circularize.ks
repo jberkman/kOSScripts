@@ -25,7 +25,7 @@
 
 @lazyglobal off.
 
-run manouvre.
+run mechanics.
 
 local completion is list(false).
 burnAtApoapsisToAltitude(apoapsis, completion).
