@@ -1,6 +1,9 @@
-// The MIT License (MIT)
 //
-// Copyright (c) 2015 jacob berkman
+// launch.ks
+// kOSScripts
+//
+// Created by jacob berkman on 2015-11-11.
+// Copyright © 2015 jacob berkman
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,11 +45,6 @@ function countdown {
 function mainEngineStart {
   hudText("Main engine start.", 5, 2, 15, yellow, true).
   stage.
-//  when maxthrust = 0 then {
-//    hudText("Staging.", 5, 2, 15, yellow, true).
-//    stage.
-//    preserve.
-//  }
 }
 
 function rollProgram {
@@ -64,10 +62,10 @@ function initiateGravityTurn {
   global gravityTurnAltitude to 0.
 
   global gravityTurnCheckpoints to list(
-    list(5000, 67.5),
-    list(12500, 45),
-    list(25000, 22.5),
-    list(35000, 0)
+    list(14, 67.5),
+    list(5, 45),
+    list(2.8, 22.5),
+    list(2, 0)
   ).
 
   lock pitch to gravityTurnPitch.
@@ -78,7 +76,7 @@ function initiateGravityTurn {
     set gravityTurnPitch to gravityTurnCheckpoints[0][1].
 
     set gravityTurnOldAltitude to gravityTurnAltitude.
-    set gravityTurnAltitude to gravityTurnCheckpoints[0][0].
+    set gravityTurnAltitude to body:atm:height / gravityTurnCheckpoints[0][0].
 
     hudText("Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude, 5, 2, 15, yellow, true).
     lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
@@ -95,18 +93,18 @@ function initiateGravityTurn {
   }
 }
 
+function coastThrottle {
+  if apoapsis > coastPID:setPoint {
+    return 0.
+  }
+  return coastPID:update(time:seconds, apoapsis).
+}
+
 function initiateCoast {
   hudText("Initiating coast.", 5, 2, 15, yellow, true).
-  global coastPID to PIDLoop(2.5, 2, 2.5, 0, 1).
-  set coastPID:setPoint to 80000.
-  lock throttle to coastPID:update(time:seconds, apoapsis).
-//  when time:seconds - coastPID:lastSampleTime > 0.1 then {
-//    print "Adjusting throttle: " + coastPID:output.
-//    set throttle to .
-//    preserve.
-//  }
-//  coastPID:update(time:seconds, apoapsis).
-  //lock throttle to coastPID:output.
+  global coastPID to PIDLoop(0.05, 0.01, 0.05, 0, 1).
+  set coastPID:setPoint to body:atm:height + 10000.
+  lock throttle to coastThrottle().
 }
 
 countdown().
@@ -118,18 +116,14 @@ rollProgram().
 wait until velocity:surface:mag > 50.
 initiateGravityTurn().
 
-wait until apoapsis > 80000.
+wait until apoapsis > body:atm:height + 1000.
 initiateCoast().
 
-wait until altitude > 70000.
+wait until altitude > body:atm:height.
 set throttle to 0.
 local completion is list(false).
-burnAtApoapsisToAltitude(80000, completion).
+burnAtApoapsisToAltitude(apoapsis, completion).
 
 wait until completion[0].
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).
-
-lock throttle to 0.
-
-set ship:control:pilotmainthrottle to 0.

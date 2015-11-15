@@ -27,7 +27,6 @@
 
 run lib_navball.
 
-
 function deg {
   parameter radians.
   return radians * constant:radToDeg.
@@ -76,12 +75,6 @@ function meanAnomalyOfOrbit {
   parameter orbit.
 
   local E is eccentricAnomalyOfOrbit(orbit).
-//  print "E: " + E.
-//  print "sin(E): " + sin(E).
-//  print "ecc: " + orbit:eccentricity.
-//  print "ecc * sinE: " + (orbit:eccentricity * sin(E)).
-//  print "rad(E): " + rad(E).
-//  print "bleh: " + (rad(E) - orbit:eccentricity * sin(E)).
   return deg(rad(E) - orbit:eccentricity * sin(E)).
 }
 
@@ -144,53 +137,29 @@ function burnWithDeltaVAtTime {
   parameter goalOrbit.
   parameter completion.
 
-  global burnWithDeltaVAtTimeGoalOrbit is goalOrbit.
   global burnWithDeltaVAtTimeCompletion is completion.
 
-  global pitchPID is PIDLoop(1, 0, 0, -10, 10).
-  set pitchPID:setPoint to 80000.
+  if deltaV > 0 {
+    lock burnComplete to apoapsis + periapsis >= goalOrbit.
+    lock steering to ship:prograde.
+  } else {
+    lock burnComplete to apoapsis + periapsis <= goalOrbit.
+    lock steering to ship:retrograde.
+  }
 
-  global burnRoll is roll_for(ship).
-  global burnHeading is compass_for(ship).
-  global burnPitch is pitch_for(ship).
+  lock burnStartTime to t - abs(deltaV * ship:mass / ship:availableThrust / 2).
+
+  print "deltaV required for circularization: " + round(abs(deltaV)).
+  print "estimated burn time: " + round(2 * (t - burnStartTime)).
 
   lock throttle to 0.
-  lock steering to r(0, 0, burnRoll) + heading(burnHeading, burnPitch).
-
-//  global circularizationPID is PIDLoop(5, 1, 5, 0, 1).
-//  set circularizationPID:setPoint to velocity:orbit:mag + deltaV.
-
-  local maxAcceleration is ship:availableThrust / ship:mass.
-  local burnDuration is deltaV / maxAcceleration.
-  global burnStartTime is t - burnDuration / 2.
-  global burnEndTime is t + burnDuration / 2.
-
-  print "deltaV required for circularization: " + deltaV.
-  print "estimated burn time: " + burnDuration.
-
-  lock pitchInput to apoapsis.
   when time:seconds >= burnStartTime then {
-    when time:seconds - pitchPID:lastSampleTime > 0.1 then {
-      set burnPitch to burnPitch + pitchPID:update(time:seconds, apoapsis).
-      if time:seconds < burnEndTime {
-        preserve.
-      }
-    }
-    //pitchPID:update(time:seconds, apoapsis).
-    //circularizationPID:update(time:seconds, velocity:orbit:mag).
     lock throttle to 1.
-    //circularizationPID:output.
-    when abs(apoapsis + periapsis - burnWithDeltaVAtTimeGoalOrbit) < 100 then {
+    when burnComplete then {
       print "Burn complete.".
-      // - circularizationPID:lastSampleTime > 0.01 then {
-      //circularizationPID:update(time:seconds, velocity:orbit:mag).
-      //print circularizationPID:setPoint - velocity:orbit:mag.
-      //if time:seconds < burnEndTime {
-      //  preserve.
-      //} else {
-        lock throttle to 0.
-        set burnWithDeltaVAtTimeCompletion[0] to true.
-      //}
+      lock throttle to 0.
+      set ship:control:pilotmainthrottle to 0.
+      set burnWithDeltaVAtTimeCompletion[0] to true.
     }
   }
 }
@@ -202,7 +171,7 @@ function burnAtPeriapsisToAltitude {
   local initialVelocity is velocityOfOrbitalAtAltitude(ship, periapsis).
   local goalVelocity is velocityOfOrbitalAtAltitudeWithSemiMajorAxis(ship, periapsis, body:radius + (periapsis + altitude) / 2).
 
-  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToPeriapsisOfOrbit(obt), completion).
+  burnWithDeltaVAtTime(goalVelocity - initialVelocity, time:seconds + timeToPeriapsisOfOrbit(obt), periapsis + altitude, completion).
 }
 
 function burnAtApoapsisToAltitude {
