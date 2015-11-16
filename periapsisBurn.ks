@@ -25,11 +25,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run manoeuvre.
 
 parameter burnAltitude.
-
-local completion is list(false).
-burnAtPeriapsisToAltitude(burnAltitude, completion).
-
-wait until completion[0].
+burnAtPeriapsisToAltitude(burnAltitude).

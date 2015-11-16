@@ -1,51 +1,8 @@
-//
-// launch.ks
-// kOSScripts
-//
-// Created by jacob berkman on 2015-11-11.
+// launch.ks - Launch into a parking suborbital trajectory.
 // Copyright © 2015 jacob berkman
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-
-run mechanics.
-
-function countdown {
-  hudText("Throttle up.", 5, 2, 15, yellow, true).
-  lock throttle to 1.0.
-
-  hudText("Initiating countdown.", 1, 2, 15, yellow, true).
-  from {
-    local tMinus is 3.
-  } until tMinus = 0 step {
-    set tMinus to tMinus - 1.
-  } do {
-    hudText("..." + tMinus, 1, 2, 15, yellow, true).
-    wait 1.
-  }
-}
-
-function mainEngineStart {
-  hudText("Main engine start.", 5, 2, 15, yellow, true).
-  stage.
-}
 
 function rollProgram {
   hudText("Initiating roll program.", 5, 2, 15, yellow, true).
@@ -63,7 +20,7 @@ function initiateGravityTurn {
 
   global gravityTurnCheckpoints to list(
     list(14, 67.5),
-    list(5, 45),
+    list(6, 45),
     list(2.8, 22.5),
     list(2, 0)
   ).
@@ -107,9 +64,8 @@ function initiateCoast {
   lock throttle to coastThrottle().
 }
 
-countdown().
-mainEngineStart().
-
+print "Waiting for launch...".
+lock throttle to 1.
 wait until velocity:surface:mag > 10.
 rollProgram().
 
@@ -120,10 +76,5 @@ wait until apoapsis > body:atm:height + 1000.
 initiateCoast().
 
 wait until altitude > body:atm:height.
-set throttle to 0.
-local completion is list(false).
-burnAtApoapsisToAltitude(apoapsis, completion).
-
-wait until completion[0].
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).
