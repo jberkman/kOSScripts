@@ -6,12 +6,11 @@
 
 run lib_navball.
 
-function compassForDir {
+function compassForVec {
   parameter ves.
-  parameter dir.
+  parameter vec.
 
   local east is east_for(ves).
-  local vec is dir:forevector.
 
   local trig_x is vdot(ves:north:vector, vec).
   local trig_y is vdot(east, vec).
@@ -26,8 +25,8 @@ function compassForDir {
   //}
 }
 
-function pitchForDir {
+function pitchForVec {
   parameter ves.
-  parameter dir.
-  return 90 - vang(ves:up:vector, dir:forevector).
+  parameter vec.
+  return 90 - vang(ves:up:vector, vec).
 }

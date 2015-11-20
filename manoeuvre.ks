@@ -22,12 +22,12 @@ function burnFromAtAltitudeToAltitudeAtTime {
 
   if deltaV > 0 {
     lock burnComplete to apoapsis + periapsis >= goalOrbit.
-    set burnHeading to compassForDir(ship, ship:prograde).
-    lock burnPitch to -pitchForDir(ship, ship:prograde).
+    set burnHeading to compassForVec(ship, ship:prograde:forevector).
+    lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
   } else {
     lock burnComplete to apoapsis + periapsis <= goalOrbit.
-    set burnHeading to compassForDir(ship, ship:retrograde).
-    lock burnPitch to -pitchForDir(ship, ship:retrograde).
+    set burnHeading to compassForVec(ship, ship:retrograde:forevector).
+    lock burnPitch to -pitchForVec(ship, ship:retrograde:forevector).
   }
 
   lock steering to r(0, 0, burnRoll) + heading(burnHeading, burnPitch).
