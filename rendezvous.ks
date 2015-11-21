@@ -4,12 +4,7 @@
 
 @lazyglobal off.
 
-run manoeuvre.
 run navball.
-
-print "Waiting to rendezvous until altitude: " + body:atm:height.
-wait until altitude > body:atm:height.
-wait 1.
 
 lock targetHeading to mod(compassForVec(ship, target:direction:vector) + 180, 360).
 lock targetPitch to -pitchForVec(ship, target:direction:vector).

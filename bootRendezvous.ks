@@ -5,6 +5,6 @@
 @lazyglobal off.
 
 print "Initializing rendezvous CPU.".
-for file in list("rendezvous", "lib_navball", "manoeuvre", "mechanics", "navball") {
+for file in list("rendezvous", "lib_navball", "navball") {
   copy file from archive.
 }
