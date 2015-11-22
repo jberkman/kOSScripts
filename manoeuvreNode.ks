@@ -10,7 +10,7 @@ function estimatedBurnTimeWithDeltaV {
 }
 
 local node is nextNode.
-local topVector = ship:facing:topVector.
+local topVector is ship:facing:topVector.
 lock steering to lookdirup(node:deltaV, topVector).
 print "Waiting until burn.".
 wait until node:eta < estimatedBurnTimeWithDeltaV(node:deltaV:mag) / 2.
