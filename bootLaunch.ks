@@ -5,6 +5,6 @@
 @lazyglobal off.
 
 print "Initializing launch CPU.".
-for file in list("launch", "gravityTurn") {
+for file in list("launch", "gravityTurn", "manoeuvreNode") {
   copy file from archive.
 }

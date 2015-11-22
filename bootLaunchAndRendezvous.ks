@@ -5,6 +5,6 @@
 @lazyglobal off.
 
 print "Initializing direct ascent CPU.".
-for file in list("launchAndRendezvous", "gravityTurn", "launch", "lib_navball", "navball", "rendezvous") {
+for file in list("launchAndRendezvous", "gravityTurn", "launch", "lib_navball", "navball", "rendezvous", "manoeuvreNode") {
   copy file from archive.
 }
