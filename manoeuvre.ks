@@ -7,6 +7,11 @@
 run navball.
 run mechanics.
 
+function edtimatedBurnTimeWithDeltaV {
+  parameter deltaV.
+  return abs(deltaV * ship:mass / ship:availableThrust).
+}
+
 function burnFromAtAltitudeToAltitudeAtTime {
   parameter sourceAltitude.
   parameter targetAltitude.
@@ -31,7 +36,7 @@ function burnFromAtAltitudeToAltitudeAtTime {
   }
 
   lock steering to r(0, 0, burnRoll) + heading(burnHeading, burnPitch).
-  lock burnStartTime to t - abs(deltaV * ship:mass / ship:availableThrust / 2).
+  lock burnStartTime to t - estimatedBurnTimeWithDeltaV(deltaV) / 2.
 
   print "deltaV required for circularization: " + round(abs(deltaV)).
   print "estimated burn time: " + round(2 * (t - burnStartTime)).
