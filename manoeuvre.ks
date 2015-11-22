@@ -42,9 +42,9 @@ function burnFromAtAltitudeToAltitudeAtTime {
   lock throttle to 1.
 
   wait until burnComplete.
-  lock throttle to 0.
-  set ship:control:pilotmainthrottle to 0.
+
   unlock steering.
+  unlock throttle.
 
   print "Burn complete.".
 }

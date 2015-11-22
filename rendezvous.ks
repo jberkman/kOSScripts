@@ -32,8 +32,7 @@ lock throttle to rendezvousPID:update(time:seconds, goalVelocity - relativeVeloc
 
 wait until target:distance < 100.
 
-lock throttle to 0.
-set ship:control:pilotmainthrottle to 0.
 unlock steering.
+unlock throttle.
 
 print "Rendezvous complete.".

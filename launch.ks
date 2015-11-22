@@ -4,6 +4,8 @@
 
 @lazyglobal off.
 
+set ship:control:pilotmainthrottle to 0.
+
 run gravityTurn.
 
 function coastThrottle {
@@ -28,5 +30,8 @@ set coastPID:setPoint to body:atm:height + 10000.
 lock throttle to coastThrottle().
 
 wait until altitude > body:atm:height.
+
+unlock steering.
+unlock throttle.
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).
