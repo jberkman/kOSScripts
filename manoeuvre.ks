@@ -7,7 +7,7 @@
 run navball.
 run mechanics.
 
-function edtimatedBurnTimeWithDeltaV {
+function estimatedBurnTimeWithDeltaV {
   parameter deltaV.
   return abs(deltaV * ship:mass / ship:availableThrust).
 }
