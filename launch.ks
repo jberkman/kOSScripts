@@ -31,7 +31,7 @@ lock throttle to coastThrottle().
 
 wait until altitude > body:atm:height.
 
-unlock steering.
-unlock throttle.
+run manoeuvre.
+burnAtApoapsisToAltitude(apoapsis).
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).

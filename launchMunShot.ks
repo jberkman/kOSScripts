@@ -1,4 +1,4 @@
-// munShot.ks - Launch directly to a Mun encounter.
+// lanchMunShot.ks - Launch directly to a Mun encounter.
 // Copyright © 2015 jacob berkman
 // This file is distributed under the terms of the MIT license.
 
@@ -8,8 +8,7 @@ run gravityTurn.
 
 launchWithGravityTurnCheckpoints(list(
   list(14, 67.5),
-  list(6, 45)//,
-//  list(2.8, 22.5)
+  list(6, 45)
 )).
 
 local mun is Body("Mun").
