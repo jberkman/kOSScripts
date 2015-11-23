@@ -7,6 +7,7 @@
 print "Initializing CPU.".
 
 for file in list("apoapsisBurn.ks",
+  "descentBurn.ks",
   "gravityTurn.ks",
   "launch.ks",
   "launchAndRendezvous.ks",

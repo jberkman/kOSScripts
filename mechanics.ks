@@ -17,12 +17,11 @@ function compassForVec {
 
   local result is arctan2(trig_y, trig_x).
 
-  //if result < 0 {
-  //  print "result => " + result.
-  //  return 360 + result.
-  //} else {
+  if result < 0 {
+    return 360 + result.
+  } else {
     return result.
-  //}
+  }
 }
 
 function pitchForVec {
@@ -105,4 +104,27 @@ function timeToPeriapsisOfOrbit {
 function timeToApoapsisOfOrbit {
   parameter orbit.
   return timeOfOrbitToMeanAnomaly(orbit, 180).
+}
+
+function timeToImpact {
+  // s = ut + 1/2 * at^2
+  // s = a / 2 * t ^ 2 + u * t
+  // a/2 * t^2 + u*t - s = 0
+
+  // a = g/2
+  local a is body:mu / (2 * body:radius ^ 2).
+
+  // b = u
+  local b is -verticalSpeed.
+
+  // c = -s
+  local c is -alt:radar.
+
+  return (-b + sqrt(b ^ 2 - 4 * a * c)) / (2 * a).
+}
+
+function suicideVelocityWithTime {
+  parameter t.
+  local a is body:mu / body:radius ^ 2.
+  return -verticalSpeed + a * t.
 }
