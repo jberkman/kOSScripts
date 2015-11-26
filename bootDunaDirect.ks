@@ -7,13 +7,13 @@
 print "Initializing CPU.".
 
 for file in list("apoapsisBurn.ks",
+  "burnFromAltitudeToAltitudeAtTime.ks",
   "descentBurn.ks",
   "gravityTurn.ks",
   "launch.ks",
   "launchAndRendezvous.ks",
   "launchMunShot.ks",
   "lib_navball.ks",
-  "manoeuvre.ks",
   "manoeuvreNode.ks",
   "mechanics.ks",
   "periapsisBurn.ks",

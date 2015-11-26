@@ -4,9 +4,7 @@
 
 @lazyglobal off.
 
-run gravityTurn.
-
-launchWithGravityTurnCheckpoints(list(
+run gravityTurn(list(
   list(14, 67.5),
   list(6, 45)
 )).

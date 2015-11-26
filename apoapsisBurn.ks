@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run manoeuvre.
+run mechanics.
 
 parameter burnAltitude.
-burnAtApoapsisToAltitude(burnAltitude).
+run burnFromAltitudeToAltitudeAtTime(apoapsis, burnAltitude, time:seconds + timeToApoapsisOfOrbit(obt)).

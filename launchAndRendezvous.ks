@@ -4,5 +4,15 @@
 
 @lazyglobal off.
 
-run launch.
+set ship:control:pilotmainthrottle to 0.
+
+run gravityTurn(list(
+  list(14, 67.5),
+  list(6, 45),
+  list(2.8, 22.5),
+  list(2, 0)
+)).
+
+wait until apoapsis > body:atm:height + 1000.
+
 run rendezvous.

@@ -4,49 +4,46 @@
 
 @lazyglobal off.
 
-function launchWithGravityTurnCheckpoints {
-  parameter checkpoints.
+parameter checkpoints.
+global gravityTurnCheckpoints to checkpoints.
 
-  print "Waiting for launch...".
-  lock throttle to 1.
-  wait until velocity:surface:mag > 10.
+print "Waiting for launch...".
+lock throttle to 1.
 
-  hudText("Initiating roll program.", 5, 2, 15, yellow, true).
-  lock steering to r(0, 0, 180) + heading(90, 90).
-  when abs(facing:roll - 90) < 1 then {
-    hudText("Roll program complete.", 5, 2, 15, yellow, true).
-  }
+wait until verticalSpeed > 10.
 
-  wait until velocity:surface:mag > 50.
+hudText("Initiating roll program.", 5, 2, 15, yellow, true).
+global sourcePitch to 90.
+global targetPitch to 90.
+global sourceAltitude to 0.
+global targetAltitude to 0.
 
-  global gravityTurnOldPitch to 90.
-  global gravityTurnPitch to 90.
-  global gravityTurnOldAltitude to 0.
-  global gravityTurnAltitude to 0.
+lock pitch to targetPitch.
+lock steering to lookdirup(heading(90, pitch):vector, heading(90, -45):vector).
 
-  global gravityTurnCheckpoints to checkpoints.
+when abs(facing:roll - 90) < 1 then {
+  hudText("Roll program complete.", 5, 2, 15, yellow, true).
+}
 
-  lock pitch to gravityTurnPitch.
-  lock steering to r(0, 0, 180) + heading(90, pitch).
+wait until verticalSpeed > 50.
 
-  when altitude > gravityTurnAltitude then {
-    set gravityTurnOldPitch to gravityTurnPitch.
-    set gravityTurnPitch to gravityTurnCheckpoints[0][1].
+when altitude > targetAltitude then {
+  set sourcePitch to targetPitch.
+  set targetPitch to gravityTurnCheckpoints[0][1].
 
-    set gravityTurnOldAltitude to gravityTurnAltitude.
-    set gravityTurnAltitude to body:atm:height / gravityTurnCheckpoints[0][0].
+  set sourceAltitude to targetAltitude.
+  set targetAltitude to body:atm:height / gravityTurnCheckpoints[0][0].
 
-    hudText("Pitching down => " + gravityTurnPitch + " @ " + gravityTurnAltitude, 5, 2, 15, yellow, true).
-    lock pitch to gravityTurnPitch + (gravityTurnOldPitch - gravityTurnPitch) * (gravityTurnAltitude - altitude) / (gravityTurnAltitude - gravityTurnOldAltitude).
+  hudText("Pitching down => " + targetPitch + " @ " + targetAltitude, 5, 2, 15, yellow, true).
+  lock pitch to targetPitch + (sourcePitch - targetPitch) * (targetAltitude - altitude) / (targetAltitude - sourceAltitude).
 
-    if gravityTurnCheckpoints:length > 1 {
-      gravityTurnCheckpoints:remove(0).
-      preserve.
-    } else {
-      when altitude > gravityTurnAltitude then {
-        hudText("Gravity turn complete.", 5, 2, 15, yellow, true).
-        lock pitch to gravityTurnPitch. 
-      }
+  if gravityTurnCheckpoints:length > 1 {
+    gravityTurnCheckpoints:remove(0).
+    preserve.
+  } else {
+    when altitude > targetAltitude then {
+      hudText("Gravity turn complete.", 5, 2, 15, yellow, true).
+      lock pitch to targetPitch. 
     }
   }
 }

@@ -6,8 +6,6 @@
 
 set ship:control:pilotmainthrottle to 0.
 
-run gravityTurn.
-
 function coastThrottle {
   if apoapsis > coastPID:setPoint {
     return 0.
@@ -15,7 +13,7 @@ function coastThrottle {
   return coastPID:update(time:seconds, apoapsis).
 }
 
-launchWithGravityTurnCheckpoints(list(
+run gravityTurn(list(
   list(14, 67.5),
   list(6, 45),
   list(2.8, 22.5),
@@ -31,7 +29,6 @@ lock throttle to coastThrottle().
 
 wait until altitude > body:atm:height.
 
-run manoeuvre.
-burnAtApoapsisToAltitude(apoapsis).
+run apoapsisBurn(apoapsis).
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).

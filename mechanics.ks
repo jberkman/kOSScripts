@@ -128,3 +128,8 @@ function suicideVelocityWithTime {
   local a is body:mu / body:radius ^ 2.
   return -verticalSpeed + a * t.
 }
+
+function estimatedBurnTimeWithDeltaV {
+  parameter deltaV.
+  return abs(deltaV * ship:mass / ship:availableThrust).
+}
