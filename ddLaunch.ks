@@ -13,7 +13,7 @@ function coastThrottle {
   return coastPID:update(time:seconds, apoapsis).
 }
 
-run gravityTurn(list(
+run ddGravityTurn(list(
   list(14, 67.5),
   list(6, 45),
   list(2.8, 22.5),
@@ -29,6 +29,6 @@ lock throttle to coastThrottle().
 
 wait until altitude > body:atm:height.
 
-run apoapsisBurn(apoapsis).
+run ddApoapsisBurn(apoapsis).
 
 hudText("Launch complete.", 5, 2, 15, yellow, true).

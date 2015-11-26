@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run gravityTurn(list(
+run ddGravityTurn(list(
   list(14, 67.5),
   list(6, 45)
 )).

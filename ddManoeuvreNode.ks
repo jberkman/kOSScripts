@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run libDunaDirect.
 
 local node is nextNode.
 local topVector is ship:facing:topVector.

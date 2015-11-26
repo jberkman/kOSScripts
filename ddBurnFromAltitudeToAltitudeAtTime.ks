@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run libDunaDirect.
 
 parameter sourceAltitude.
 parameter targetAltitude.

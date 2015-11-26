@@ -1,10 +1,14 @@
 // mechanics.ks - Orbital mechanics routines.
 // Copyright © 2015 jacob berkman
+// Portions (c) the KSLib team
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
 
-run lib_navball.
+function east_for {
+  parameter ves.
+  return vcrs(ves:up:vector, ves:north:vector).
+}
 
 function compassForVec {
   parameter ves.

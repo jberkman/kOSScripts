@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run libDunaDirect.
 
 parameter burnAltitude.
-run burnFromAltitudeToAltitudeAtTime(apoapsis, burnAltitude, time:seconds + timeToApoapsisOfOrbit(obt)).
+run ddBurnFromAltitudeToAltitudeAtTime(apoapsis, burnAltitude, time:seconds + timeToApoapsisOfOrbit(obt)).

@@ -6,7 +6,7 @@
 
 set ship:control:pilotmainthrottle to 0.
 
-run gravityTurn(list(
+run ddGravityTurn(list(
   list(14, 67.5),
   list(6, 45),
   list(2.8, 22.5),
@@ -15,4 +15,4 @@ run gravityTurn(list(
 
 wait until apoapsis > body:atm:height + 1000.
 
-run rendezvous.
+run ddRendezvous.

@@ -6,17 +6,17 @@
 
 print "Initializing CPU.".
 
-for file in list("apoapsisBurn.ks",
-  "burnFromAltitudeToAltitudeAtTime.ks",
-  "descentBurn.ks",
-  "gravityTurn.ks",
-  "launch.ks",
-  "launchAndRendezvous.ks",
-  "launchMunShot.ks",
+for file in list("ddApoapsisBurn.ks",
+  "ddBurnFromAltitudeToAltitudeAtTime.ks",
+  "ddDescentBurn.ks",
+  "ddGravityTurn.ks",
+  "ddLaunch.ks",
+  "ddLaunchAndRendezvous.ks",
+  "ddLaunchMunShot.ks",
   "lib_navball.ks",
-  "manoeuvreNode.ks",
-  "mechanics.ks",
-  "periapsisBurn.ks",
-  "rendezvous.ks") {
+  "ddManoeuvreNode.ks",
+  "ddMechanics.ks",
+  "ddPeriapsisBurn.ks",
+  "ddRendezvous.ks") {
     copy file from archive.
 }

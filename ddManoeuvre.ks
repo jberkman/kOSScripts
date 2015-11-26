@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run libDunaDirect.
 
 function estimatedBurnTimeWithDeltaV {
   parameter deltaV.
