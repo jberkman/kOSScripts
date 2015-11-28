@@ -6,16 +6,16 @@
 
 print "Initializing CPU.".
 
-for file in list("ddApoapsisBurn.ks",
+for file in list(
+  "libDunaDirect.ks",
+  "ddApoapsisBurn.ks",
   "ddBurnFromAltitudeToAltitudeAtTime.ks",
   "ddDescentBurn.ks",
   "ddGravityTurn.ks",
   "ddLaunch.ks",
   "ddLaunchAndRendezvous.ks",
   "ddLaunchMunShot.ks",
-  "lib_navball.ks",
   "ddManoeuvreNode.ks",
-  "ddMechanics.ks",
   "ddPeriapsisBurn.ks",
   "ddRendezvous.ks") {
     copy file from archive.

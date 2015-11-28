@@ -130,7 +130,16 @@ function timeToImpact {
 function suicideVelocityWithTime {
   parameter t.
   local a is body:mu / body:radius ^ 2.
-  return -verticalSpeed + a * t.
+  local ret is -verticalSpeed + a * t.
+  return ret.
+}
+
+function suicideBurnDistance {
+  local v is suicideVelocityWithTime(timeToImpact()).
+  local t is estimatedBurnTimeWithDeltaV(v).
+  local g is ship:availableThrust / ship:mass. // - body:mu / body:radius ^ 2.
+  local d is g * t ^ 2 / 2.
+  return d.
 }
 
 function estimatedBurnTimeWithDeltaV {
