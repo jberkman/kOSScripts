@@ -4,6 +4,8 @@
 
 @lazyglobal off.
 
+set ship:control:pilotmainthrottle to 0.
+
 run ddGravityTurn(list(
   list(14, 67.5),
   list(6, 45)

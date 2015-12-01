@@ -13,6 +13,6 @@ run ddGravityTurn(list(
   list(2, 0)
 )).
 
-wait until apoapsis > body:atm:height + 1000.
+run ddCoastToAltitude(target:orbit:semiMajorAxis - body:radius).
 
 run ddRendezvous.

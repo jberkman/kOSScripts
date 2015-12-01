@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run mechanics.
+run libDunaDirect.
 
 lock targetHeading to mod(compassForVec(ship, target:direction:vector) + 180, 360).
 lock targetPitch to -pitchForVec(ship, target:direction:vector).
@@ -18,7 +18,6 @@ print "relative velocity heading: " + round(relativeHeading) + " pitch: " + roun
 
 lock rendezvousHeading to 3 * relativeHeading - 2 * targetHeading.
 lock rendezvousPitch to 3 * relativePitch - 2 * targetPitch.
-local rendezvousRoll is roll_for(ship).
 
 lock steering to lookdirup(heading(rendezvousHeading, rendezvousPitch):vector, up:vector).
 
