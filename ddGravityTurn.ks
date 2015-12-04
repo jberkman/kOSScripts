@@ -1,10 +1,12 @@
-// gravityTurn.ks - Perform a gravity turn.
+// ddGravityTurn.ks - Perform a gravity turn.
 // Copyright © 2015 jacob berkman
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
 
+parameter turnHeading.
 parameter checkpoints.
+
 global gravityTurnCheckpoints to checkpoints.
 
 print "Waiting for launch...".
@@ -19,7 +21,7 @@ global sourceAltitude to 0.
 global targetAltitude to 0.
 
 lock pitch to targetPitch.
-lock steering to lookdirup(heading(90, pitch):vector, heading(90, -45):vector).
+lock steering to lookdirup(heading(turnHeading, pitch):vector, heading(turnHeading, -45):vector).
 
 when abs(facing:roll - 90) < 1 then {
   hudText("Roll program complete.", 5, 2, 15, yellow, true).

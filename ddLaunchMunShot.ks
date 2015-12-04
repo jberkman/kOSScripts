@@ -6,7 +6,7 @@
 
 set ship:control:pilotmainthrottle to 0.
 
-run ddGravityTurn(list(
+run ddGravityTurn(90, list(
   list(14, 67.5),
   list(6, 45)
 )).
