@@ -10,6 +10,7 @@ for file in list(
   "libDunaDirect.ks",
   "ddApoapsisBurn.ks",
   "ddBurnFromAltitudeToAltitudeAtTime.ks",
+  "ddCoastToAltitude.ks",
   "ddDescentBurn.ks",
   "ddGravityTurn.ks",
   "ddLaunch.ks",
