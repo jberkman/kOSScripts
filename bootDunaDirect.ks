@@ -17,6 +17,7 @@ for file in list(
   "ddLaunchMunShot.ks",
   "ddManoeuvreNode.ks",
   "ddPeriapsisBurn.ks",
+  "ddPolarLaunch.ks",
   "ddRendezvous.ks") {
     copy file from archive.
 }
