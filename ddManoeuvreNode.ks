@@ -8,9 +8,13 @@ run libDunaDirect.
 
 local node is nextNode.
 local originalVector to node:deltaV.
-local topVector is ship:facing:topVector.
 
+print "Waiting until burn - 30.".
+wait until node:eta < 30 + estimatedBurnTimeWithDeltaV(node:deltaV:mag) / 2.
+
+local topVector is ship:facing:topVector.
 lock steering to lookdirup(node:deltaV, topVector).
+
 print "Waiting until burn.".
 wait until node:eta < estimatedBurnTimeWithDeltaV(node:deltaV:mag) / 2.
 
