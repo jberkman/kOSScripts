@@ -1,4 +1,4 @@
-// descentBurn.ks - Perform descent burn.
+// ddDescentBurn.ks - Perform descent burn.
 // Copyright © 2015 jacob berkman
 // This file is distributed under the terms of the MIT license.
 
@@ -22,33 +22,5 @@ lock throttle to burnPID:update(time:seconds, -groundspeed).
 print "Waiting for surface velocity to reach 0.".
 wait until groundspeed < 0.25.
 
-local lock burnUp to heading(90, -45).
-local lock burnPitch to 90 - 2 * vang(up:vector, ship:srfretrograde:vector).
-
-local lock impactTime to timeToImpact().
-local lock suicideDeltaV to suicideVelocityWithTime(impactTime).
-local lock landed to status = "LANDED" or status = "SPLASHED".
-
-//set burnPID:kP to 0.1.
-//et burnPID:kI to 0.1.
-//set burnPID:kD to 0.5.
-set burnPID:setPoint to -1.
-lock throttle to 0.
-
-print "Descending to " + suicideBurnDistance() + "...".
-wait until landed or alt:radar - suicideBurnDistance() < 10. // impactTime < ceiling(estimatedBurnTimeWithDeltaV(suicideDeltaV)).
-
-until landed {
-  print "Burning!".
-  lock throttle to burnPID:update(time:seconds, verticalSpeed).
-  wait until landed or abs(verticalSpeed) < 1.
-
-  lock throttle to 0.
-  print "Waiting for burn...".
-  wait until landed or impactTime < ceiling(estimatedBurnTimeWithDeltaV(suicideDeltaV)).
-}
-
-unlock steering.
 unlock throttle.
-
-print "Landing complete.".
+unlock steering.
