@@ -16,6 +16,7 @@ for file in list(
   "ddLand.ks",
   "ddLaunch.ks",
   "ddLaunchAndRendezvous.ks",
+  "ddLaunchAndRoll.ks",
   "ddLaunchInclined.ks",
   "ddLaunchMunShot.ks",
   "ddManoeuvreNode.ks",

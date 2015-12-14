@@ -6,6 +6,7 @@
 
 set ship:control:pilotmainthrottle to 0.
 
+run ddLaunchAndroll(90).
 run ddGravityTurn(90, list(
   list(14, 67.5),
   list(6, 45)

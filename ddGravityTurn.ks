@@ -9,12 +9,8 @@ parameter checkpoints.
 
 global gravityTurnCheckpoints to checkpoints.
 
-print "Waiting for launch...".
-lock throttle to 1.
+wait until verticalSpeed > 50.
 
-wait until verticalSpeed > 10.
-
-hudText("Initiating roll program.", 5, 2, 15, yellow, true).
 global sourcePitch to 90.
 global targetPitch to 90.
 global sourceAltitude to 0.
@@ -22,12 +18,6 @@ global targetAltitude to 0.
 
 lock pitch to targetPitch.
 lock steering to lookdirup(heading(turnHeading, pitch):vector, heading(turnHeading, -45):vector).
-
-when abs(facing:roll - 90) < 1 then {
-  hudText("Roll program complete.", 5, 2, 15, yellow, true).
-}
-
-wait until verticalSpeed > 50.
 
 when altitude > targetAltitude then {
   set sourcePitch to targetPitch.
