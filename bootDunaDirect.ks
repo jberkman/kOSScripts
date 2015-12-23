@@ -12,6 +12,7 @@ for file in list(
   "ddBurnFromAltitudeToAltitudeAtTime.ks",
   "ddCoastToAltitude.ks",
   "ddDescentBurn.ks",
+  "ddDock.ks",
   "ddGravityTurn.ks",
   "ddLand.ks",
   "ddLaunch.ks",
@@ -23,6 +24,7 @@ for file in list(
   "ddPeriapsisBurn.ks",
   "ddPolarLaunch.ks",
   "ddRendezvous.ks",
+  "ddStabilize.ks",
   "ddSuicideBurn.ks") {
     copy file from archive.
 }
