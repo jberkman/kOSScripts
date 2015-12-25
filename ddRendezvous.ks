@@ -29,7 +29,7 @@ wait until relativeVelocity:mag > goalVelocity.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
 lock throttle to rendezvousPID:update(time:seconds, goalVelocity - relativeVelocity:mag).
 
-wait until target:distance < 100.
+wait until target:distance < 500.
 
 unlock steering.
 unlock throttle.
