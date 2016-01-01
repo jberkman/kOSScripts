@@ -9,6 +9,7 @@ parameter shipPortTag, targetPortTag.
 run ddStabilize.
 
 local shipPort is ship:partsTagged(shipPortTag)[0].
+shipPort:controlFrom().
 local targetPort is target:partsTagged(targetPortTag)[0].
 
 local debug is false.
