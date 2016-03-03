@@ -27,13 +27,16 @@ if deltaV > 0 {
   lock burnPitch to -pitchForVec(ship, ship:retrograde:forevector).
 }
 
-lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
 lock burnStartTime to t - estimatedBurnTimeWithDeltaV(deltaV) / 2.
 
 print "deltaV required for circularization: " + round(abs(deltaV)).
 print "estimated burn time: " + round(2 * (t - burnStartTime)).
 
 lock throttle to 0.
+
+wait until time:seconds >= burnStartTime - 30.
+set warp 0.
+lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
 
 wait until time:seconds >= burnStartTime.
 lock throttle to 1.

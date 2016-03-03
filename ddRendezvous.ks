@@ -26,6 +26,7 @@ lock goalVelocity to target:distance / 100.
 print "Waiting until relative velocity > " + goalVelocity.
 wait until relativeVelocity:mag > goalVelocity.
 
+set warp to 0.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
 lock throttle to rendezvousPID:update(time:seconds, goalVelocity - relativeVelocity:mag).
 
