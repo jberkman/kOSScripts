@@ -7,15 +7,15 @@
 print "Initializing CPU.".
 
 for file in list(
-  "libDunaDirect.ks",
-  "ddBurnFromAltitudeToAltitudeAtTime.ks",
-  "ddDescentBurn.ks",
-  "ddDock.ks",
-  "ddLand.ks",
-  "ddLaunch.ks",
-  "ddManoeuvreNode.ks",
-  "ddRendezvous.ks",
-  "ddStabilize.ks",
-  "ddSuicideBurn.ks") {
+  "dd_descent_burn",
+  "dd_dock",
+  "dd_land",
+  "dd_launch",
+  "dd_manual_burn",
+  "dd_node_burn",
+  "dd_rendezvous",
+  "dd_stabilize",
+  "dd_suicide_burn",
+  "lib_duna_direct") {
     copy file from archive.
 }

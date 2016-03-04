@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run libDunaDirect.
+run lib_duna_direct.
 
 function stringWithTime {
   parameter t.

@@ -11,7 +11,7 @@ local launchAltitude is body:atm:height + 10000.
 if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
 } else {
-  run libDunaDirect.
+  run lib_duna_direct.
 }
 
 print "Waiting for launch...".
@@ -74,7 +74,7 @@ if body:atm:exists {
 lock throttle to 0.
 
 if rendezvous {
-	run ddRendezvous.
+	run dd_rendezvous.
 } else {
-	run ddBurnFromAltitudeToAltitudeAtTime(apoapsis, apoapsis, time:seconds + timeToApoapsisOfOrbit(obt)).
+	run dd_manual_burn(apoapsis, apoapsis, time:seconds + timeToApoapsisOfOrbit(obt)).
 }

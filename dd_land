@@ -4,5 +4,5 @@
 
 @lazyglobal off.
 
-run ddDescentBurn.
-run ddSuicideBurn.
+run dd_descent_burn.
+run dd_suicide_burn.

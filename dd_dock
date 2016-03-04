@@ -6,7 +6,7 @@
 
 parameter shipPortTag, targetPortTag.
 
-run ddStabilize.
+run dd_stabilize.
 
 local shipPort is ship:partsTagged(shipPortTag)[0].
 shipPort:controlFrom().

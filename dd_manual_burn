@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-run libDunaDirect.
+run lib_duna_direct.
 
 parameter sourceAltitude.
 parameter targetAltitude.
@@ -35,7 +35,7 @@ print "estimated burn time: " + round(2 * (t - burnStartTime)).
 lock throttle to 0.
 
 wait until time:seconds >= burnStartTime - 30.
-set warp 0.
+set warp to 0.
 lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
 
 wait until time:seconds >= burnStartTime.
