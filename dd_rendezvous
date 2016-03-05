@@ -4,33 +4,79 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Rendezvous! v1.9".
+
 run lib_duna_direct.
 
-lock targetHeading to mod(compassForVec(ship, target:direction:vector) + 180, 360).
-lock targetPitch to -pitchForVec(ship, target:direction:vector).
+lock greenCircle to target:velocity:orbit - ship:velocity:orbit.
+lock pinkTriangle to -target:direction:vector.
 
-lock relativeVelocity to target:velocity:orbit - ship:velocity:orbit.
-lock relativeHeading to compassForVec(ship, relativeVelocity).
-lock relativePitch to pitchForVec(ship, relativeVelocity).
+lock greenPitch to pitchForVec(ship, greenCircle).
+lock pinkPitch to pitchForVec(ship, pinkTriangle).
 
-print "target heading: " + round(targetHeading) + " pitch: " + round(targetPitch).
-print "relative velocity heading: " + round(relativeHeading) + " pitch: " + round(relativePitch).
+lock greenHeading to compassForVec(ship, greenCircle).
+lock pinkHeading to compassForVec(ship, pinkTriangle).
 
-lock rendezvousHeading to 3 * relativeHeading - 2 * targetHeading.
-lock rendezvousPitch to 3 * relativePitch - 2 * targetPitch.
+lock dAng to abs(vAng(greenCircle, pinkTriangle)).
+lock angMult to min(90, 2 * dAng) / dAng.
 
-lock steering to lookdirup(heading(rendezvousHeading, rendezvousPitch):vector, up:vector).
+//print "dAng: " + dAng.
+//print "angMult: " + angMult.
+
+//print "pitch: green: " + greenPitch + " pink: " + pinkPitch.
+//print "delta: " + (pinkPitch - greenPitch).
+
+//print "heading: green: " + greenHeading + " pink: " + pinkHeading.
+//print "delta: " + (pinkHeading - greenHeading).
+
+lock goalDir to lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)):vector, target:up:vector).
+lock steering to goalDir.
 
 lock goalVelocity to target:distance / 100.
-
-print "Waiting until relative velocity > " + goalVelocity.
-wait until relativeVelocity:mag > goalVelocity.
-
-set warp to 0.
+local goalDistance is 128000.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
-lock throttle to rendezvousPID:update(time:seconds, goalVelocity - relativeVelocity:mag).
+until target:distance < 150 {
+	print "Next checkpoint: " + goalDistance + "m".
+	wait until target:distance < goalDistance or dAng > 90.
+	if target:distance > 5000 or dAng > 90 {
+		set rendezvousPID:maxOutput to 1.
+	} else if target:distance > 1000 {
+		set rendezvousPID:maxOutput to 0.25.
+	} else {
+		set rendezvousPID:maxOutput to 0.1.
+	}
+	set warp to 0.
+	if dAng > 90 {
+		print "Steering.".
+		lock steering to greenCircle.
+		steerToVec().
+		print "Zeroing relative velocity.".
+		lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
+		wait until dAng < 45 and greenCircle:mag < 10.
+		print "Re-acquiring rendezvous.".
+		lock steering to target:direction.
+		steerToDir().
+		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - goalVelocity).
+		wait until dAng < 90 and greenCircle:mag > goalVelocity.
+		set goalDistance to 128000.
+		lock steering to goalDir.
+	} else {
+		steerToDir().
+		print "Slowing to: " + (goalDistance / 100) + "m/s".
+		lock throttle to rendezvousPID:update(time:seconds, goalVelocity - greenCircle:mag).
+		wait until greenCircle:mag < goalVelocity * 1.05 or dAng > 90.
+		set goalDistance to goalDistance / 2.
+	}
+	lock throttle to 0.
+}
 
-wait until target:distance < 500.
+print "Killing relative velocity.".
+lock steering to greenCircle.
+steerToVec().
+set rendezvousPID:maxOutput to 0.05.
+lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
+wait until abs(greenCircle:mag) < 0.1.
 
 unlock steering.
 unlock throttle.

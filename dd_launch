@@ -37,6 +37,7 @@ if body:atm:exists {
 }
 
 lock throttle to 0.
+wait until altitude > body:atm:height.
 
 if rendezvous {
 	run dd_rendezvous.

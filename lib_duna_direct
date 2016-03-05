@@ -146,3 +146,11 @@ function estimatedBurnTimeWithDeltaV {
   parameter deltaV.
   return abs(deltaV * ship:mass / ship:availableThrust).
 }
+
+function steerToDir {
+  wait until vAng(steering:vector, ship:facing:vector) < 5.
+}
+
+function steerToVec {
+  wait until vAng(steering, ship:facing:vector) < 5.
+}
