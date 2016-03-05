@@ -9,6 +9,8 @@ print "DunaDirect Launch! v2.0".
 
 parameter inclination, rendezvous.
 
+run lib_duna_direct.
+
 local launchHeading is 90 - inclination.
 local launchAltitude is body:atm:height + 10000.
 if rendezvous {
@@ -34,7 +36,7 @@ if body:atm:exists {
 
   print "Initiating gravity turn.".
   lock targetPitch to 90 - 90 * min(1, (apoapsis + altitude) / (body:atm:height + 10000)).
-  lock lookAt to heading(launchHeading, targetPitch).
+  lock lookAt to heading(launchHeading, max(targetPitch, -8 * pitchForVec(ship, ship:velocity:orbit))).
 
   until altitude > body:atm:height {
     set warp to 0.
