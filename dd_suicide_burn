@@ -4,6 +4,9 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Suicide! v1.0".
+
 run lib_duna_direct.
 
 local lock burnHeading to compassForVec(ship, ship:srfretrograde:forevector).

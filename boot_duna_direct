@@ -4,7 +4,7 @@
 
 @lazyglobal off.
 
-print "Initializing CPU.".
+print "DunaDirect Boot! v2.0".
 
 for file in list(
   "dd_descent_burn",

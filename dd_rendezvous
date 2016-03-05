@@ -40,7 +40,7 @@ function goalDir {
 	return lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)):vector, target:up:vector).
 }
 
-func maxOutput {
+function maxOutput {
 	if target:distance > 5000 or dAng > 90 {
 		return 1.
 	} else if target:distance > 1000 {
@@ -73,7 +73,7 @@ until target:distance < 250 {
 		lock steering to target:direction.
 		steerToDir().
 		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - goalVelocity).
-		wait until dAng < 90 and greenCircle:mag > goalVelocity.
+		wait until dAng < 90 and greenCircle:mag > goalVelocity / 2.
 		set goalDistance to 128000 * 2.
 		lock steering to goalDir().
 	} else if greenCircle:mag > goalVelocity {

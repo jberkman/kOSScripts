@@ -4,6 +4,9 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Launch! v2.0".
+
 parameter inclination, rendezvous.
 
 local launchHeading is 90 - inclination.
@@ -14,11 +17,12 @@ if rendezvous {
   run lib_duna_direct.
 }
 
-print "Waiting for launch...".
+print "Flight computer online.".
 set ship:control:pilotmainthrottle to 0.
 lock throttle to 1.
-wait until verticalSpeed > 10.
+wait until verticalSpeed > 0.
 
+print "Liftoff!".
 local lock lookAt to heading(launchHeading, 90).
 local lock lookUp to heading(launchHeading, -45).
 lock steering to lookdirup(lookAt:vector, lookUp:vector).
@@ -26,6 +30,7 @@ lock steering to lookdirup(lookAt:vector, lookUp:vector).
 if body:atm:exists {
   wait until verticalSpeed > 50.
 
+  print "Initiating gravity turn.".
   lock targetPitch to 90 - 90 * min(1, (apoapsis + altitude) / (body:atm:height + 10000)).
   lock lookAt to heading(launchHeading, targetPitch).
 
@@ -36,6 +41,7 @@ if body:atm:exists {
   wait until apoapsis > launchAltitude.
 }
 
+print "Beginning coast.".
 lock throttle to 0.
 wait until altitude > body:atm:height.
 

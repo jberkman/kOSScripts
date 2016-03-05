@@ -4,6 +4,9 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Dock! v1.0".
+
 parameter shipPortTag, targetPortTag.
 
 run dd_stabilize.

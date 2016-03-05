@@ -4,6 +4,9 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Stabilize! v1.0".
+
 local debug is false.
 
 if debug {

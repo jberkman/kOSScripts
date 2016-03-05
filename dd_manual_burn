@@ -4,6 +4,9 @@
 
 @lazyglobal off.
 
+clearscreen.
+print "DunaDirect Burn! v1.0".
+
 run lib_duna_direct.
 
 parameter sourceAltitude.
