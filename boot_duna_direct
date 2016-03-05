@@ -1,8 +1,0 @@
-// bootDunaDirect.ks - Initialize CPU.
-// Copyright © 2015 jacob berkman
-// This file is distributed under the terms of the MIT license.
-
-@lazyglobal off.
-
-copy boot_dd_compact from archive.
-run boot_dd_compact.
