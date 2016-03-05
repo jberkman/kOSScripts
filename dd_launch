@@ -49,7 +49,7 @@ if body:atm:exists {
       }
     }
     lock throttle to 0.
-    wait until altitude > body:atm:height or apoapsis < body:atm:height.
+    wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
   }
 } else {
 	wait until apoapsis > altitude + 1000 - alt:radar.
