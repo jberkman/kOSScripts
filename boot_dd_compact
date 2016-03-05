@@ -1,0 +1,20 @@
+// bootDunaDirect.ks - Initialize CPU.
+// Copyright © 2015 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+
+print "DunaDirect Boot! v2.0".
+
+for file in list(
+  "dd_descent_burn",
+  "dd_land",
+  "dd_launch",
+  "dd_manual_burn",
+  "dd_node_burn",
+  "dd_rendezvous",
+  "dd_stabilize",
+  "dd_suicide_burn"
+  "lib_duna_direct") {
+    copy file from archive.
+}

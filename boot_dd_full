@@ -5,11 +5,9 @@
 @lazyglobal off.
 
 for file in list(
-  "boot_duna_direct",
-  "dd_descent_burn",
-  "dd_land",
-  "dd_suicide_burn") {
+  "boot_dd_compact",
+  "dd_dock") {
     copy file from archive.
 }
 
-run boot_duna_direct.
+run boot_dd_compact.
