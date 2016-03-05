@@ -14,6 +14,7 @@ local originalVector to node:deltaV.
 
 print "Waiting until burn - 30.".
 wait until node:eta < 30 + estimatedBurnTimeWithDeltaV(node:deltaV:mag) / 2.
+set warp to 0.
 
 local topVector is ship:facing:topVector.
 lock steering to lookdirup(node:deltaV, topVector).
