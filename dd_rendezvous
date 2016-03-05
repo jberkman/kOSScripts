@@ -13,15 +13,6 @@ lock greenCircle to target:velocity:orbit - ship:velocity:orbit.
 lock pinkTriangle to -target:direction:vector.
 lock dAng to abs(vAng(greenCircle, pinkTriangle)).
 
-//print "dAng: " + dAng.
-//print "angMult: " + angMult.
-
-//print "pitch: green: " + greenPitch + " pink: " + pinkPitch.
-//print "delta: " + (pinkPitch - greenPitch).
-
-//print "heading: green: " + greenHeading + " pink: " + pinkHeading.
-//print "delta: " + (pinkHeading - greenHeading).
-
 function goalDir {
 	local gc is greenCircle.
 	local pt is pinkTriangle.
@@ -35,8 +26,6 @@ function goalDir {
 	local ang is abs(vAng(gc, pt)).
 	local angMult is min(90, 2 * dAng) / dAng.
 
-	//print "ang: " + ang + " x " + angMult.
-
 	return lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)):vector, target:up:vector).
 }
 
@@ -49,8 +38,6 @@ function maxOutput {
 		return 0.1.
 	}
 }
-
-//lock goalDir to lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)), target:up:vector).
 
 lock steering to goalDir().
 
