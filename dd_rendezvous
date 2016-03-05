@@ -5,7 +5,7 @@
 @lazyglobal off.
 
 clearscreen.
-print "DunaDirect Rendezvous! v1.9".
+print "DunaDirect Rendezvous! v2.0".
 
 run lib_duna_direct.
 
