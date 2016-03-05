@@ -14,7 +14,7 @@ for file in list(
   "dd_node_burn",
   "dd_rendezvous",
   "dd_stabilize",
-  "dd_suicide_burn"
+  "dd_suicide_burn",
   "lib_duna_direct") {
     copy file from archive.
 }
