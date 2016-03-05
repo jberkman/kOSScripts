@@ -4,15 +4,12 @@
 
 @lazyglobal off.
 
-print "DunaDirect Boot! v2.0".
-
 for file in list(
-  "dd_dock",
-  "dd_launch",
-  "dd_manual_burn",
-  "dd_node_burn",
-  "dd_rendezvous",
-  "dd_stabilize",
-  "lib_duna_direct") {
+  "boot_duna_direct",
+  "dd_descent_burn",
+  "dd_land",
+  "dd_suicide_burn") {
     copy file from archive.
 }
+
+run boot_duna_direct.
