@@ -11,15 +11,7 @@ run lib_duna_direct.
 
 lock greenCircle to target:velocity:orbit - ship:velocity:orbit.
 lock pinkTriangle to -target:direction:vector.
-
-lock greenPitch to pitchForVec(ship, greenCircle).
-lock pinkPitch to pitchForVec(ship, pinkTriangle).
-
-lock greenHeading to compassForVec(ship, greenCircle).
-lock pinkHeading to compassForVec(ship, pinkTriangle).
-
 lock dAng to abs(vAng(greenCircle, pinkTriangle)).
-lock angMult to min(90, 2 * dAng) / dAng.
 
 //print "dAng: " + dAng.
 //print "angMult: " + angMult.
@@ -30,24 +22,47 @@ lock angMult to min(90, 2 * dAng) / dAng.
 //print "heading: green: " + greenHeading + " pink: " + pinkHeading.
 //print "delta: " + (pinkHeading - greenHeading).
 
-lock goalDir to lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)):vector, target:up:vector).
-lock steering to goalDir.
+function goalDir {
+	local gc is greenCircle.
+	local pt is pinkTriangle.
+
+	local greenPitch is pitchForVec(ship, gc).
+	local pinkPitch is pitchForVec(ship, pt).
+
+	local greenHeading is compassForVec(ship, gc).
+	local pinkHeading is compassForVec(ship, pt).
+
+	local ang is abs(vAng(gc, pt)).
+	local angMult is min(90, 2 * dAng) / dAng.
+
+	//print "ang: " + ang + " x " + angMult.
+
+	return lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)):vector, target:up:vector).
+}
+
+func maxOutput {
+	if target:distance > 5000 or dAng > 90 {
+		return 1.
+	} else if target:distance > 1000 {
+		return 0.25.
+	} else {
+		return 0.1.
+	}
+}
+
+//lock goalDir to lookDirUp(heading(greenHeading + angMult * (greenHeading - pinkHeading), greenPitch + angMult * (greenPitch - pinkPitch)), target:up:vector).
+
+lock steering to goalDir().
 
 lock goalVelocity to target:distance / 100.
 local goalDistance is 128000.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
-until target:distance < 150 {
+until target:distance < 250 {
 	print "Next checkpoint: " + goalDistance + "m".
 	wait until target:distance < goalDistance or dAng > 90.
-	if target:distance > 5000 or dAng > 90 {
-		set rendezvousPID:maxOutput to 1.
-	} else if target:distance > 1000 {
-		set rendezvousPID:maxOutput to 0.25.
-	} else {
-		set rendezvousPID:maxOutput to 0.1.
-	}
-	set warp to 0.
+	set rendezvousPID:maxOutput to maxOutput().
 	if dAng > 90 {
+		set warp to 0.
 		print "Steering.".
 		lock steering to greenCircle.
 		steerToVec().
@@ -59,15 +74,16 @@ until target:distance < 150 {
 		steerToDir().
 		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - goalVelocity).
 		wait until dAng < 90 and greenCircle:mag > goalVelocity.
-		set goalDistance to 128000.
-		lock steering to goalDir.
-	} else {
+		set goalDistance to 128000 * 2.
+		lock steering to goalDir().
+	} else if greenCircle:mag > goalVelocity {
+		set warp to 0.
 		steerToDir().
 		print "Slowing to: " + (goalDistance / 100) + "m/s".
 		lock throttle to rendezvousPID:update(time:seconds, goalVelocity - greenCircle:mag).
 		wait until greenCircle:mag < goalVelocity * 1.05 or dAng > 90.
-		set goalDistance to goalDistance / 2.
 	}
+	set goalDistance to goalDistance / 2.
 	lock throttle to 0.
 }
 
@@ -76,7 +92,7 @@ lock steering to greenCircle.
 steerToVec().
 set rendezvousPID:maxOutput to 0.05.
 lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
-wait until abs(greenCircle:mag) < 0.1.
+wait until abs(greenCircle:mag) < 0.2.
 
 unlock steering.
 unlock throttle.
