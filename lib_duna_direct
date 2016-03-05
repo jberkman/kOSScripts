@@ -144,6 +144,9 @@ function suicideBurnDistance {
 
 function estimatedBurnTimeWithDeltaV {
   parameter deltaV.
+  if ship:availableThrust = 0 {
+    return 0.
+  }
   return abs(deltaV * ship:mass / ship:availableThrust).
 }
 
