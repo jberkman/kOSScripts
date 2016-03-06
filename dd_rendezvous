@@ -21,7 +21,7 @@ function updateWaypoint {
 	if targetPortTag <> invalidPort and target:unpacked {
 		print "Targeting port.".
 		local targetPort is target:partsTagged(targetPortTag)[0].
-		lock waypoint to targetPort:portFacing:vector * 75 + targetPort:nodePosition.
+		lock waypoint to targetPort:portFacing:vector * 100 + targetPort:nodePosition.
 		when not target:unpacked then { updateWaypoint(). }
 	} else {
 		print "Targeting vessel.".
@@ -37,7 +37,7 @@ function safeWarp {
 }
 
 if targetPortTag <> invalidPort {
-	set waypointGoalDistance to 25.
+	set waypointGoalDistance to 50.
 	updateWaypoint.
 }
 
@@ -89,7 +89,7 @@ until waypoint:mag < waypointGoalDistance {
 	set rendezvousPID:maxOutput to maxOutput().
 	if dAng > 90 {
 		safeWarp().
-		if greenCircle:mag > 10 {
+		if greenCircle:mag > 2 {
 			print "Steering.".
 			lock steering to greenCircle.
 			steerToVec().
@@ -100,7 +100,7 @@ until waypoint:mag < waypointGoalDistance {
 		print "Re-acquiring rendezvous.".
 		lock steering to waypoint.
 		steerToVec().
-		print "gc:m: " + greenCircle:mag + " cpV: " + checkpointVelocity.
+		//print "gc:m: " + greenCircle:mag + " cpV: " + checkpointVelocity.
 		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - max(checkpointVelocity / 2, 2)).
 		wait until dAng < 90 and greenCircle:mag > max(2, checkpointVelocity / 2).
 		set checkpointDistance to 128000 * 2.
