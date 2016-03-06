@@ -6,6 +6,7 @@
 
 parameter shipPortTag, targetPortTag.
 
+rcs off.
 run dd_rendezvous(targetPortTag).
 run dd_stabilize.
 
@@ -14,7 +15,7 @@ print "DunaDirect Dock! v1.5".
 
 local shipPort is ship:partsTagged(shipPortTag)[0].
 shipPort:controlFrom().
-local targetPort is target:partsTagged(targetPortTag)[0].
+global targetPort is target:partsTagged(targetPortTag)[0].
 
 local debug is true.
 
@@ -37,6 +38,146 @@ if debug {
 local control is ship:control.
 set control:rotation to v(0, 0, 0).
 set control:translation to v(0, 0, 0).
+
+// Distance we need to travel, in ship-facing (*not* port-facing!) coords.
+local lock tgtWaypoint to targetPort:nodePosition - shipPort:nodePosition.
+local lock tgtRelWaypoint to ship:facing:inverse * tgtWaypoint.
+local lock maxV to min(tgtWaypoint:mag / 10, 0.2).
+
+local function normalizeWaypoint {
+  local pos is tgtRelWaypoint.
+  local ret is tgtRelWaypoint:normalized * min(tgtWaypoint:mag / 10, 0.2).
+  if pos:x < 0.5 {
+    set ret:x to pos:x / 2.
+  }
+  if pos:y < 0.5 {
+    set ret:y to pos:y / 2.
+  }
+  if pos:z < 0.5 {
+    set ret:z to pos:z / 2.
+  }
+  return ret.
+}
+local lock tgtSetPoints to normalizeWaypoint().
+
+local lock tgtVel to ship:velocity:orbit - target:velocity:orbit.
+local lock tgtRelVel to ship:facing:inverse * tgtVel.
+
+//if debug {
+  local velDraw is vecDraw(V(0, 0, 0), tgtVel, yellow, "Target Velocity", 1, true).
+  local posDraw is vecDraw(V(0, 0, 0), tgtWaypoint, magenta, "Target Position", 1, true).
+
+  local starDraw is vecDraw(v(0, 0, 0), shipPort:portFacing:upVector, green, "STAR", 1, true).
+  local topDraw is vecDraw(v(0, 0, 0), shipPort:portFacing:topVector, blue, "UP", 1, true).
+  local foreDraw is vecDraw(v(0, 0, 0), shipPort:portFacing:foreVector, red, "FORE", 1, true).
+//}
+
+local lock yawVel to vdot(angularVel, shipPort:portFacing:topVector).
+local lock pitchVel to -vdot(angularVel, shipPort:portFacing:starVector).
+local lock rollVel to -vdot(angularVel, shipPort:portFacing:foreVector).
+
+// These are the directions we want to face in order to line up
+// with the target docking port.
+local lock yawOff to 90 * vdot(targetPort:portFacing:foreVector, shipPort:portFacing:starVector).
+local lock pitchOff to 90 * vdot(targetPort:portFacing:foreVector, shipPort:portFacing:topVector).
+local lock rollOff to 90 * vdot(targetPort:portFacing:topVector, shipPort:portFacing:foreVector).
+
+function rotationControl {
+  parameter off.
+  parameter vel.
+  if off > 30 {
+    if vel > -0.05 {
+      return -1.
+    }
+  } else if off > 1 {
+    if vel > -off / 200 {
+      return -0.5.
+    } else if vel < -0.1 {
+      return 0.25.
+    }
+  } else if off < -30 {
+    if vel < 0.05 {
+      return 1.
+    }
+  } else if off < -1 {
+    if vel < -off / 200 {
+      return 0.5.
+    } else if vel > 0.1 {
+      return -0.25.
+    }
+  } else if vel > 0.02 {
+    return -0.1.
+  } else if vel < -0.02 {
+    return 0.2.
+  }
+  return 0.
+}
+
+print "Performing docking approach.".
+rcs on.
+until tgtWaypoint:mag < targetPort:acquireRange {
+  //if debug {
+    print round(yawOff, 3) at(10, 1).
+    print round(pitchOff, 3) at(20, 1).
+    print round(rollOff, 3) at (30, 1).
+
+    print round(yawVel, 3) at(10, 2).
+    print round(pitchVel, 3) at(20, 2).
+    print round(rollVel, 3) at(30, 2).
+
+    print round(control:yaw, 3) at(10, 3).
+    print round(control:pitch, 3) at(20, 3).
+    print round(control:roll, 3) at(30, 3).
+
+    print round(tgtRelWaypoint:x, 2) at(10, 6).
+    print round(tgtRelWaypoint:y, 2) at(20, 6).
+    print round(tgtRelWaypoint:z, 2) at(30, 6).
+
+    print round(tgtSetPoints:x, 2) at(10, 7).
+    print round(tgtSetPoints:y, 2) at(20, 7).
+    print round(tgtSetPoints:z, 2) at(30, 7).
+
+    print round(tgtRelVel:x, 2) at(10, 8).
+    print round(tgtRelVel:y, 2) at(20, 8).
+    print round(tgtRelVel:z, 2) at(30, 8).
+
+    print round(control:starboard, 2) at(10, 9).
+    print round(control:top, 2) at(20, 9).
+    print round(control:fore, 2) at(30, 9).
+
+    set velDraw:start to shipPort:nodePosition.
+    set posDraw:start to shipPort:nodePosition.
+    set topDraw:start to shipPort:nodePosition.
+    set starDraw:start to shipPort:nodePosition.
+    set foreDraw:start to shipPort:nodePosition.
+
+    set velDraw:vec to tgtVel * 10.
+    set posDraw:vec to tgtWaypoint.
+
+    set topDraw:vec to shipPort:portFacing:topVector * 5.
+    set starDraw:vec to shipPort:portFacing:starVector * 5.
+    set foreDraw:vec to shipPort:portFacing:foreVector * 5.
+  //}
+
+//  local rotationControl is Vector(0, 0, 0).
+//  local translationControl is Vector(0, 0, 0).
+
+  local mV is maxV.
+  local mR is 0.1.
+
+  set control:yaw to rotationControl(yawOff, yawVel).
+  set control:pitch to rotationControl(pitchOff, pitchVel).
+  wait 0.
+  set control:yaw to 0.
+  set control:pitch to 0.
+  wait 0.1.
+}
+rcs off.
+
+set control:neutralize to true.
+clearvecdraws().
+print "Docking complete.".
+exit.
 
 // Waypoints are used to avoid crashing into the target.
 // Currently, we just use one in front of the docking port.
@@ -76,6 +217,8 @@ local lock tgtRelWaypoint to ship:facing:inverse * tgtWaypoint.
 // However, if we use just a scaled-normalized vector, directions that require
 // a small delta will have the value be less than the RCS "flame-out".
 // For small values, we allow a larger absolute value.
+
+local lock maxV to min(tgtWaypoint:mag / 10, 0.2).
 
 local function normalizeWaypoint {
   local pos is tgtRelWaypoint.
