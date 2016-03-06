@@ -63,7 +63,7 @@ until tgtWaypoint:mag < targetPort:acquireRange {
   local starControl is translateControl(tgtRelWaypoint:x, tgtRelVel:x).
   local topControl is translateControl(tgtRelWaypoint:y, tgtRelVel:y).
   local foreDistance is 0.
-  if abs(tgtRelWaypoint:x) < 1 and abs(tgtRelwaypoint:y) < 1 {
+  if vAng(tgtWaypoint, dockFacing:vector) < 15 {
     set foreDistance to tgtRelWaypoint:z.
   }
   local foreControl is translateControl(foreDistance, tgtRelVel:z).
@@ -83,8 +83,10 @@ until tgtWaypoint:mag < targetPort:acquireRange {
     wait 0.
     rcs off.
     lock steering to dockFacing.
+    wait 0.15.
+  } else {
+    wait 0.
   }
-  wait 0.1.
 }
 
 //  local velDraw is vecDraw(V(0, 0, 0), tgtVel, yellow, "Target Velocity", 1, true).
