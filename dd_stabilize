@@ -48,7 +48,7 @@ until angularVel:mag < 0.01 {
     print round(control:roll, 3) at(30, 2).
   }
   
-  wait 0.05.
+  wait 0.
 }
 
 set control:neutralize to true.

@@ -5,13 +5,50 @@
 @lazyglobal off.
 
 clearscreen.
+clearvecdraws().
 print "DunaDirect Rendezvous! v2.0".
 
-run lib_duna_direct.
+run once lib_duna_direct.
+
+local invalidPort is "$INVALID$".
+declare parameter targetPortTag is invalidPort.
+
+local lock waypoint to target:position.
+local waypointGoalDistance is 250.
+
+function updateWaypoint {
+	print "Updating waypoint.".
+	if targetPortTag <> invalidPort and target:unpacked {
+		print "Targeting port.".
+		local targetPort is target:partsTagged(targetPortTag)[0].
+		lock waypoint to targetPort:portFacing:vector * 50 + targetPort:nodePosition.
+		when not target:unpacked then { updateWaypoint(). }
+	} else {
+		print "Targeting vessel.".
+		lock waypoint to target:position.
+		when target:unpacked then { updateWaypoint(). }
+	}
+}
+
+function safeWarp {
+	set warp to 0.
+	wait until warp = 0.
+	updateWaypoint().
+}
+
+if targetPortTag <> invalidPort {
+	set waypointGoalDistance to 15.
+	updateWaypoint.
+}
+
+print "Waypoint goal: " + waypointGoalDistance.
 
 lock greenCircle to target:velocity:orbit - ship:velocity:orbit.
-lock pinkTriangle to -target:direction:vector.
+lock pinkTriangle to -waypoint.
 lock dAng to abs(vAng(greenCircle, pinkTriangle)).
+
+//global greenDraw is vecDraw(V(0, 0, 0), greenCircle:normalized * 10, green, "Velocity", 1, true).
+//global pinkDraw is vecDraw(V(0, 0, 0), waypoint, magenta, "Distance", 1, true).
 
 function goalDir {
 	local gc is greenCircle.
@@ -30,9 +67,9 @@ function goalDir {
 }
 
 function maxOutput {
-	if target:distance > 5000 or dAng > 90 {
+	if waypoint:mag > 5000 {
 		return 1.
-	} else if target:distance > 1000 {
+	} else if waypoint:mag > 1000 {
 		return 0.25.
 	} else {
 		return 0.1.
@@ -41,45 +78,51 @@ function maxOutput {
 
 lock steering to goalDir().
 
-lock goalVelocity to target:distance / 100.
-local goalDistance is 128000.
+lock checkpointVelocity to waypoint:mag / 100.
+local checkpointDistance is 128000.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
-until target:distance < 250 {
-	print "Next checkpoint: " + goalDistance + "m".
-	wait until target:distance < goalDistance or dAng > 90.
+until waypoint:mag < waypointGoalDistance {
+	//set greenDraw:vec to greenCircle:normalized * 10.
+	//set pinkDraw:vec to waypoint.
+	print "Next checkpoint: " + checkpointDistance + "m".
+	wait until waypoint:mag < checkpointDistance or dAng > 90.
 	set rendezvousPID:maxOutput to maxOutput().
 	if dAng > 90 {
-		set warp to 0.
-		print "Steering.".
-		lock steering to greenCircle.
-		steerToVec().
-		print "Zeroing relative velocity.".
-		lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
-		wait until dAng < 45 and greenCircle:mag < 10.
+		safeWarp().
+		if greenCircle:mag > 10 {
+			print "Steering.".
+			lock steering to greenCircle.
+			steerToVec().
+			print "Zeroing relative velocity.".
+			lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
+			wait until dAng < 45 and greenCircle:mag < 10.
+		}
 		print "Re-acquiring rendezvous.".
-		lock steering to target:direction.
+		lock steering to waypoint.
 		steerToDir().
-		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - goalVelocity).
-		wait until dAng < 90 and greenCircle:mag > goalVelocity / 2.
-		set goalDistance to 128000 * 2.
+		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - checkpointVelocity).
+		wait until dAng < 90 and greenCircle:mag > checkpointVelocity / 2.
+		set checkpointDistance to 128000 * 2.
 		lock steering to goalDir().
-	} else if greenCircle:mag > goalVelocity {
-		set warp to 0.
+	} else if greenCircle:mag > checkpointVelocity {
+		safeWarp().
 		steerToDir().
-		print "Slowing to: " + (goalDistance / 100) + "m/s".
-		lock throttle to rendezvousPID:update(time:seconds, goalVelocity - greenCircle:mag).
-		wait until greenCircle:mag < goalVelocity * 1.05 or dAng > 90.
+		print "Slowing to: " + (checkpointDistance / 100) + "m/s".
+		lock throttle to rendezvousPID:update(time:seconds, checkpointVelocity - greenCircle:mag).
+		wait until greenCircle:mag < checkpointVelocity * 1.05 or dAng > 90.
 	}
-	set goalDistance to goalDistance / 2.
+	set checkpointDistance to checkpointDistance / 2.
 	lock throttle to 0.
 }
 
-print "Killing relative velocity.".
-lock steering to greenCircle.
-steerToVec().
-set rendezvousPID:maxOutput to 0.05.
-lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
-wait until abs(greenCircle:mag) < 0.2.
+if abs(greenCircle:mag) > 0.2 {
+	print "Stopping.".
+	lock steering to greenCircle.
+	steerToVec().
+	set rendezvousPID:maxOutput to 0.05.
+	lock throttle to rendezvousPID:update(time:seconds, -greenCircle:mag).
+	wait until abs(greenCircle:mag) < 0.2.
+}
 
 unlock steering.
 unlock throttle.
