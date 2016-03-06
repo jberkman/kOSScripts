@@ -10,7 +10,7 @@ These scripts are my attempt to automate repetitive tasks in KSP as real space p
 1. Copy the scripts into your `$KSP/Ships/Script` folder.
 2. Configure your kOS processer with the appropriate boot script, depending on storage availability and mission requirements.
 
-### dd_boot_5k
+### dd_boot_05k
 
 Required storage: 5000
 
