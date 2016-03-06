@@ -13,9 +13,19 @@ parameter sourceAltitude.
 parameter targetAltitude.
 parameter t.
 
+function orbitalVelocity {
+  parameter orbitable.
+  parameter altitude.
+  parameter a is orbitable:obt:semiMajorAxis.
+
+  local r is altitude + orbitable:body:radius.
+
+  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
+}
+
 local goalOrbit to sourceAltitude + targetAltitude.
-local initialVelocity is velocityOfOrbitalAtAltitude(ship, sourceAltitude).
-local goalVelocity is velocityOfOrbitalAtAltitudeWithSemiMajorAxis(ship, sourceAltitude, body:radius + goalOrbit / 2).
+local initialVelocity is orbitalVelocity(ship, sourceAltitude).
+local goalVelocity is orbitalVelocity(ship, sourceAltitude, body:radius + goalOrbit / 2).
 local deltaV is goalVelocity - initialVelocity.
 
 local burnHeading is 0.

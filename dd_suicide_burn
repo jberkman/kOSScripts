@@ -9,6 +9,38 @@ print "DunaDirect Suicide! v1.0".
 
 run lib_duna_direct.
 
+function timeToImpact {
+  // s = ut + 1/2 * at^2
+  // s = a / 2 * t ^ 2 + u * t
+  // a/2 * t^2 + u*t - s = 0
+
+  // a = g/2
+  local a is body:mu / (2 * body:radius ^ 2).
+
+  // b = u
+  local b is -verticalSpeed.
+
+  // c = -s
+  local c is -alt:radar.
+
+  return (-b + sqrt(b ^ 2 - 4 * a * c)) / (2 * a).
+}
+
+function suicideVelocityWithTime {
+  parameter t.
+  local a is body:mu / body:radius ^ 2.
+  local ret is -verticalSpeed + a * t.
+  return ret.
+}
+
+function suicideBurnDistance {
+  local v is suicideVelocityWithTime(timeToImpact()).
+  local t is estimatedBurnTimeWithDeltaV(v).
+  local g is ship:availableThrust / ship:mass. // - body:mu / body:radius ^ 2.
+  local d is g * t ^ 2 / 2.
+  return d.
+}
+
 local lock burnHeading to compassForVec(ship, ship:srfretrograde:forevector).
 local lock burnPitch to 90 - 2 * vang(up:vector, ship:srfretrograde:vector).
 local lock burnUp to heading(90, -45).

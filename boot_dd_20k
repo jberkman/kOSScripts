@@ -1,0 +1,19 @@
+// boot_dd_20k - Initialize CPUs w/ 20k storage.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+
+print "DunaDirect 20k Boot! v2.0".
+
+for file in list(
+  "dd_descent_burn",
+  "dd_dock",
+  "dd_launch",
+  "dd_manual_burn",
+  "dd_node_burn",
+  "dd_rendezvous",
+  "dd_suicide_burn",
+  "lib_duna_direct") {
+    copy file from archive.
+}

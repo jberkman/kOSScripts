@@ -61,5 +61,5 @@ if body:atm:exists {
 if rendezvous {
 	run dd_rendezvous.
 } else {
-	run dd_manual_burn(apoapsis, apoapsis, time:seconds + timeToApoapsisOfOrbit(obt)).
+	run dd_manual_burn(apoapsis, apoapsis, time:seconds + eta:apoapsis).
 }
