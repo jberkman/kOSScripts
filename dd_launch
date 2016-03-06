@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Launch! v2.0".
 
-parameter inclination, rendezvous.
+parameter inclination is 0, rendezvous is false.
 
 run lib_duna_direct.
 
