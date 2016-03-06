@@ -10,7 +10,7 @@ These scripts are my attempt to automate repetitive tasks in KSP as real space p
 1. Copy the scripts into your `$KSP/Ships/Script` folder.
 2. Configure your kOS processer with the appropriate boot script, depending on storage availability and mission requirements.
 
-### dd_boot_05k
+### boot_dd_05k
 
 Required storage: 5000
 
@@ -26,7 +26,7 @@ Supported commands:
   
   Mainly a helper for circularization, but if you really need to do manual burns, this may be helpful.
 
-### dd_boot_10k
+### boot_dd_10k
 
 Required storage: 10000
 
@@ -52,7 +52,7 @@ Additional commands:
   
   Attempt to land by performing a suicide burn. Not for the faint of heart, but it works.
 
-### dd_boot_20k
+### boot_dd_20k
 
 Required storage: 20000
 
