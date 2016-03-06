@@ -20,7 +20,11 @@ Supported commands:
   
   Launches the vessel into a parking orbit - 10km for non-atmospheric bodies, and about 10km above the atmosphere for atomspheric bodies.
   
-  An optional (approximate) inclination can be specified in degrees. 90 launches to the north, -90 (or 270) launches to the south. 
+  An optional (approximate) inclination can be specified in degrees. 90 launches to the north, -90 (or 270) launches to the south.
+  
+  Most staging is performed automatically, although boosters may not be automatically staged.
+  
+  See the [Duna Launch System](http://www.dunadirect.com/vab.html) for staging parameters and reference designs.
 
 2. `dd_manual_burn([sourceAltitude], [targetAltitude], [timeForBurn])`
   
