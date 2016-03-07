@@ -9,6 +9,7 @@ These scripts are my attempt to automate repetitive tasks in KSP as real space p
 
 1. Copy the scripts into your `$KSP/Ships/Script` folder.
 2. Configure your kOS processer with the appropriate boot script, depending on storage availability and mission requirements.
+3. Set kOS IPU to at least 400.
 
 ### boot_dd_05k
 
