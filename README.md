@@ -18,7 +18,7 @@ Supported commands:
 
 1. `dd_launch(<inclination>)`
   
-  Launches the vessel into a parking orbit - 10km for non-atmospheric bodies, and about 10km above the atmosphere for atomspheric bodies.
+  Launches the vessel into a parking orbit - 10km for non-atmospheric bodies, and about 10km above the atmosphere for atomspheric bodies. Only tested on Kerbin so far.
   
   An optional (approximate) inclination can be specified in degrees. 90 launches to the north, -90 (or 270) launches to the south.
   
