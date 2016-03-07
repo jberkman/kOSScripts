@@ -9,14 +9,22 @@ print "DunaDirect Launch! v2.0".
 
 parameter inclination is 0, rendezvous is false.
 
-run lib_duna_direct.
+run once lib_duna_direct.
+
+function orbitalVelocity {
+  parameter orbitable.
+  parameter altitude.
+  parameter a is orbitable:obt:semiMajorAxis.
+
+  local r is altitude + orbitable:body:radius.
+
+  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
+}
 
 local launchHeading is 90 - inclination.
 local launchAltitude is body:atm:height + 10000.
 if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
-} else {
-  run lib_duna_direct.
 }
 
 print "Flight computer online.".
@@ -40,6 +48,7 @@ if body:atm:exists {
 
   until altitude > body:atm:height {
     set warp to 0.
+    wait until warp = 0.
     lock throttle to 1.
     until apoapsis > launchAltitude {
       wait until apoapsis > launchAltitude or maxThrust = 0.
@@ -55,11 +64,36 @@ if body:atm:exists {
 	wait until apoapsis > altitude + 1000 - alt:radar.
   lock lookAt to heading(launchHeading, 22.5).
   wait until apoapsis > launchAltitude.
-  lock throttle to 0.
 }
+
+lock throttle to 0.
 
 if rendezvous {
 	run dd_rendezvous.
 } else {
-	run dd_manual_burn(apoapsis, apoapsis, time:seconds + eta:apoapsis).
+  local goalSemiMajorAxis is body:radius + apoapsis.
+  local initialVelocity is orbitalVelocity(ship, apoapsis).
+  local goalVelocity is orbitalVelocity(ship, apoapsis, goalSemiMajorAxis).
+  local deltaV is goalVelocity - initialVelocity.
+
+  local burnTime is deltaVBurnTime(deltaV).
+  lock burnStartTime to time:seconds + eta:apoapsis - burnTime / 2.
+
+  print "burn time: " + round(burnTime) + " dV:" + round(deltaV).
+
+  wait until time:seconds >= burnStartTime - 30.
+  set warp to 0.
+  lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
+  lock steering to lookdirup(heading(launchHeading, burnPitch):vector, heading(launchHeading, -45):vector).
+
+  wait until time:seconds >= burnStartTime.
+  steerToDir().
+  lock throttle to 1.
+
+  wait until obt:semiMajorAxis >= goalSemiMajorAxis.
+
+  unlock steering.
+  unlock throttle.
+
+  print "Burn complete.".
 }

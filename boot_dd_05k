@@ -4,11 +4,11 @@
 
 @lazyglobal off.
 
-print "DunaDirect 5k Boot! v2.0".
+print "DunaDirect Boot! v2.1".
 
 for file in list(
   "dd_launch",
-  "dd_manual_burn",
+  "dd_node_burn",
   "lib_duna_direct") {
     copy file from archive.
 }

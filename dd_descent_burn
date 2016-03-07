@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Descend! v1.0".
 
-run lib_duna_direct.
+run once lib_duna_direct.
 
 local lock burnHeading to compassForVec(ship, ship:srfretrograde:forevector).
 local lock burnPitch to 2 * pitchForVec(ship, ship:srfretrograde:forevector).

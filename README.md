@@ -26,9 +26,9 @@ Supported commands:
   
   See the [Duna Launch System](http://www.dunadirect.com/vab.html) for staging parameters and reference designs.
 
-2. `dd_manual_burn([sourceAltitude], [targetAltitude], [timeForBurn])`
+2. `dd_node_burn`
   
-  Mainly a helper for circularization, but if you really need to do manual burns, this may be helpful.
+  Executes the next manouevre node. Kills warp ~30 seconds before burning, for low values of warp.
 
 ### boot_dd_10k
 
@@ -48,11 +48,7 @@ Additional commands:
   
   Shortcut for performing a descent burn followed by a suicide burn.
 
-4. `dd_node_burn`
-  
-  Executes the next manouevre node. Kills warp ~30 seconds before burning, for low values of warp.
-
-5. `dd_suicide_burn`
+4. `dd_suicide_burn`
   
   Attempt to land by performing a suicide burn. Not for the faint of heart, but it works.
 

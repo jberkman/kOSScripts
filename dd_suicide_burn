@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Suicide! v1.0".
 
-run lib_duna_direct.
+run once lib_duna_direct.
 
 function timeToImpact {
   // s = ut + 1/2 * at^2
@@ -35,7 +35,7 @@ function suicideVelocityWithTime {
 
 function suicideBurnDistance {
   local v is suicideVelocityWithTime(timeToImpact()).
-  local t is estimatedBurnTimeWithDeltaV(v).
+  local t is deltaVBurnTime(v).
   local g is ship:availableThrust / ship:mass. // - body:mu / body:radius ^ 2.
   local d is g * t ^ 2 / 2.
   return d.
@@ -60,7 +60,7 @@ local lock suicideDeltaV to suicideVelocityWithTime(impactTime).
 local lock landed to status = "LANDED" or status = "SPLASHED".
 
 print "Descending to " + suicideBurnDistance() + "...".
-wait until landed or alt:radar - suicideBurnDistance() < 10. // impactTime < ceiling(estimatedBurnTimeWithDeltaV(suicideDeltaV)).
+wait until landed or alt:radar - suicideBurnDistance() < 10. // impactTime < ceiling(deltaVBurnTime(suicideDeltaV)).
 
 until landed {
   print "Burning!".
@@ -69,7 +69,7 @@ until landed {
 
   lock throttle to 0.
   print "Waiting for burn...".
-  wait until landed or impactTime < ceiling(estimatedBurnTimeWithDeltaV(suicideDeltaV)).
+  wait until landed or impactTime < ceiling(deltaVBurnTime(suicideDeltaV)).
 }
 
 unlock steering.
