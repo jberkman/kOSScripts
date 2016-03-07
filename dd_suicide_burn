@@ -74,5 +74,5 @@ until landed {
 
 unlock steering.
 unlock throttle.
-
+sas on.
 print "Landing complete.".
