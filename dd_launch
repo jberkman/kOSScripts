@@ -43,7 +43,7 @@ if body:atm:exists {
   wait until verticalSpeed > 50.
 
   print "Initiating gravity turn.".
-  lock targetPitch to 90 - 90 * min(1, (apoapsis + altitude) / (body:atm:height + 10000)).
+  lock targetPitch to 90 - 90 * min(1, apoapsis / (body:atm:height - 10000)).
   lock lookAt to heading(launchHeading, max(targetPitch, -8 * pitchForVec(ship, ship:velocity:orbit))).
 
   until altitude > body:atm:height {
