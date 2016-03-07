@@ -92,6 +92,7 @@ if rendezvous {
 
   wait until obt:semiMajorAxis >= goalSemiMajorAxis.
 
+  lock throttle to 0.
   unlock steering.
   unlock throttle.
 
