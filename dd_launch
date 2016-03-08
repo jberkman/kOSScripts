@@ -36,14 +36,13 @@ print "Liftoff!".
 wait until verticalSpeed > 10.
 
 local lock lookAt to heading(launchHeading, 90).
-local lock lookUp to heading(launchHeading, -45).
-lock steering to lookdirup(lookAt:vector, lookUp:vector).
+lock steering to lookdirup(lookAt:vector, SHIP:UP:vector).
 
 if body:atm:exists {
   wait until verticalSpeed > 50.
 
   print "Initiating gravity turn.".
-  lock targetPitch to 90 - 90 * min(1, apoapsis / (body:atm:height - 10000)).
+  lock targetPitch to 90 - 90 * min(1, altitude / (body:atm:height - 10000)).
   lock lookAt to heading(launchHeading, max(targetPitch, -8 * pitchForVec(ship, ship:velocity:orbit))).
 
   until altitude > body:atm:height {
