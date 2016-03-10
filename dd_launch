@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Launch! v2.0".
 
-parameter inclination is 0, rendezvous is false.
+parameter inclination is 0, rendezvous is false, goalAltitude is -1.
 
 run once lib_duna_direct.
 
@@ -25,6 +25,9 @@ local launchHeading is 90 - inclination.
 local launchAltitude is body:atm:height + 10000.
 if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
+}
+if goalAltitude > 0 {
+	set launchAltitude to goalAltitude.
 }
 
 print "Flight computer online.".
