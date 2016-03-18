@@ -79,7 +79,7 @@ function maxOutput {
 lock steering to goalDir().
 
 lock checkpointVelocity to waypoint:mag / 100.
-local checkpointDistance is 128000.
+local checkpointDistance is 64000.
 global rendezvousPID to PIDLoop(1, 0, 0, 0, 1).
 until waypoint:mag < waypointGoalDistance {
 	//set greenDraw:vec to greenCircle:normalized * 10.
@@ -103,7 +103,7 @@ until waypoint:mag < waypointGoalDistance {
 		//print "gc:m: " + greenCircle:mag + " cpV: " + checkpointVelocity.
 		lock throttle to rendezvousPID:update(time:seconds, greenCircle:mag - max(checkpointVelocity / 2, 2)).
 		wait until dAng < 90 and greenCircle:mag > max(2, checkpointVelocity / 2).
-		set checkpointDistance to 128000 * 2.
+		set checkpointDistance to 128000.
 		lock steering to goalDir().
 	} else if greenCircle:mag > checkpointVelocity {
 		safeWarp().

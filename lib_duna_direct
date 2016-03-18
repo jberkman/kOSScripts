@@ -49,3 +49,10 @@ function steerToDir {
 function steerToVec {
   wait until vAng(steering, ship:facing:vector) < 5.
 }
+
+function clamp {
+  parameter x, l, h.
+  if x < l { return l. }
+  if x > h { return h. }
+  return x.
+}
