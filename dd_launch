@@ -5,7 +5,7 @@
 @lazyglobal off.
 
 clearscreen.
-print "DunaDirect Launch! v2.0".
+print "DunaDirect Launch! v2.1".
 
 parameter inclination is 0, rendezvous is false.
 
@@ -15,10 +15,35 @@ function orbitalVelocity {
   parameter orbitable.
   parameter altitude.
   parameter a is orbitable:obt:semiMajorAxis.
-
   local r is altitude + orbitable:body:radius.
-
   return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
+}
+
+function launchPitch {
+  local shipPitch is pitchForVec(ship, ship:velocity:surface).
+  local goalHeight is 6 * body:atm:height / 7.
+  if apoapsis > goalHeight / 2 {
+    local pitch is 90 - 90 * min(1.05, 0.5 + (apoapsis - goalHeight / 2) / goalHeight).
+    return clamp(pitch, -8 * pitchForVec(ship, ship:velocity:orbit), shipPitch + 10).
+  }
+  if apoapsis < goalHeight / 4 {
+    return 90 - 30 * apoapsis / (goalHeight / 4).
+  }
+  return clamp(45, shipPitch - 2.5, shipPitch + 2.5).
+}
+
+function hasFlameout {
+  if maxThrust = 0 {
+    return true.
+  }
+  local engs is 0.
+  list engines in engs.
+  for eng in engs {
+    if eng:ignition and eng:flameout and not eng:multiMode {
+      return true.
+    }
+  }
+  return false.
 }
 
 local launchHeading is 90 - inclination.
@@ -27,12 +52,8 @@ if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
 }
 
-print "Flight computer online.".
 set ship:control:pilotmainthrottle to 0.
 lock throttle to 1.
-wait until verticalSpeed > 1.
-
-print "Liftoff!".
 wait until verticalSpeed > 10.
 
 local lock lookAt to heading(launchHeading, 90).
@@ -41,18 +62,16 @@ lock steering to lookdirup(lookAt:vector, lookUp:vector).
 
 if body:atm:exists {
   wait until verticalSpeed > 50.
-
-  print "Initiating gravity turn.".
-  lock targetPitch to 90 - 90 * min(1, 7 * apoapsis / body:atm:height / 6).
-  lock lookAt to heading(launchHeading, max(targetPitch, -8 * pitchForVec(ship, ship:velocity:orbit))).
+  lock targetPitch to goalPitch().
+  lock lookAt to heading(launchHeading, launchPitch()).
 
   until altitude > body:atm:height {
     set warp to 0.
     wait until warp = 0.
     lock throttle to 1.
     until apoapsis > launchAltitude {
-      wait until apoapsis > launchAltitude or maxThrust = 0.
-      until maxThrust > 0 {
+      wait until apoapsis > launchAltitude or hasFlameout().
+      until not hasFlameout() {
         wait 2.
         stage.
       }
@@ -95,6 +114,4 @@ if rendezvous {
   lock throttle to 0.
   unlock steering.
   unlock throttle.
-
-  print "Burn complete.".
 }
