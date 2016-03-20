@@ -1,0 +1,30 @@
+// lib_dd_05k - Launch and node routines.
+// Copyright © 2015 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+
+function clamp {
+  parameter x, l, h.
+  if x < l { return l. }
+  if x > h { return h. }
+  return x.
+}
+
+function deltaVBurnTime {
+  parameter dV.
+  if ship:availableThrust = 0 {
+    return 0.
+  }
+  return abs(dV * ship:mass / ship:availableThrust).
+}
+
+function pitchForVec {
+  parameter ves.
+  parameter vec.
+  return 90 - vang(ves:up:vector, vec).
+}
+
+function steerToDir {
+  wait until vAng(steering:vector, ship:facing:vector) < 5.
+}

@@ -1,0 +1,12 @@
+// lib_dd_20k - Rendezvous routines.
+// Copyright © 2015 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+
+run once lib_dd_10k.
+
+function steerToVec {
+  wait until vAng(steering, ship:facing:vector) < 5.
+}
+

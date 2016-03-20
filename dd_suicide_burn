@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Suicide! v1.0".
 
-run once lib_duna_direct.
+run once lib_dd_10k.
 
 function timeToImpact {
   // s = ut + 1/2 * at^2

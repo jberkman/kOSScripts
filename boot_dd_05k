@@ -3,12 +3,7 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-
 print "DunaDirect Boot! v2.1".
-
-for file in list(
-  "dd_launch",
-  "dd_node_burn",
-  "lib_duna_direct") {
-    copy file from archive.
+for file in list("dd_launch", "dd_node_burn", "lib_dd_05k") {
+  copy file from archive.
 }

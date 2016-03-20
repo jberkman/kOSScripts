@@ -9,7 +9,7 @@ print "DunaDirect Launch! v2.1".
 
 parameter inclination is 0, rendezvous is false.
 
-run once lib_duna_direct.
+run once lib_dd_05k.
 
 function orbitalVelocity {
   parameter orbitable.

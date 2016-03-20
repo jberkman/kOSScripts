@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect Burn! v1.0".
 
-run once lib_duna_direct.
+run once lib_dd_10k.
 
 parameter sourceAltitude.
 parameter targetAltitude.
