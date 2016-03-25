@@ -11,7 +11,7 @@ run once lib_dd_05k.
 
 local node is nextNode.
 local originalVector to node:deltaV.
-wait until node:eta < 30 + deltaVBurnTime(node:deltaV:mag) / 2.
+wait until node:eta < 60 + deltaVBurnTime(node:deltaV:mag) / 2.
 
 set warp to 0.
 local topVector is ship:facing:topVector.
