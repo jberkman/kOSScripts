@@ -5,6 +5,8 @@
 
 @lazyglobal off.
 
+run once lib_dd_05k.
+
 function east_for {
   parameter ves.
   return vcrs(ves:up:vector, ves:north:vector).

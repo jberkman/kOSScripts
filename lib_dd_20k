@@ -9,4 +9,3 @@ run once lib_dd_10k.
 function steerToVec {
   wait until vAng(steering, ship:facing:vector) < 5.
 }
-
