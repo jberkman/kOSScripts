@@ -108,7 +108,7 @@ until waypoint:mag < waypointGoalDistance {
 	} else if greenCircle:mag > checkpointVelocity {
 		safeWarp().
 		steerToDir().
-		print "Slowing to: " + (checkpointDistance / 100) + "m/s".
+		print "Slowing to: " + (checkpointVelocity * 1.05) + "m/s".
 		lock throttle to rendezvousPID:update(time:seconds, checkpointVelocity - greenCircle:mag).
 		wait until greenCircle:mag < checkpointVelocity * 1.05 or dAng > 90.
 	}
