@@ -8,6 +8,7 @@ for file in list(
   "boot_dd_05k",
   "dd_descent_burn",
   "dd_land",
+  "dd_rcs_node_burn",
   "dd_suicide_burn",
   "lib_dd_10k") {
     copy file from archive.
