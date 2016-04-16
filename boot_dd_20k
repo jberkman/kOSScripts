@@ -6,6 +6,7 @@
 
 for file in list(
   "boot_dd_10k",
+  "dd_deuces_tuning",
   "dd_dock",
   "dd_rendezvous",
   "lib_dd_20k") {
