@@ -53,9 +53,10 @@ if rendezvous {
 }
 
 set ship:control:pilotmainthrottle to 0.
+sas on.
 lock throttle to 1.
 wait until verticalSpeed > 10.
-
+sas off.
 local lock lookAt to heading(launchHeading, 90).
 local lock lookUp to heading(launchHeading, -45).
 lock steering to lookdirup(lookAt:vector, lookUp:vector).
