@@ -5,7 +5,7 @@
 @lazyglobal off.
 
 clearscreen.
-print "DunaDirect Launch! v2.2".
+print "DunaDirect Launch! v2.3".
 
 parameter inclination is 0, rendezvous is false.
 
@@ -57,6 +57,31 @@ if rendezvous {
 
 set ship:control:pilotmainthrottle to 0.
 sas on.
+if status = "prelaunch" {
+  local preIgnite is false.
+  for module in ship:modulesNamed("LaunchClamp") {
+    if module:part:stage < stage:number - 1 {
+      set preIgnite to true.
+      break.
+    }
+  }
+  print "T -".
+  from { local count is 30. } until count = 0 step { set count to count - 1. wait 1. } do {
+    print count + " " at(4, 1).
+    if count = 15 {
+      set warp to 0.
+    }
+    if preIgnite and count = 3 {
+      print "Ignition.".
+      global tIgnition is time:seconds.
+      lock throttle to (time:seconds - tIgnition) / 4 + 0.5.
+      stage.
+    }
+  }
+  print 0 at(4, 1).
+  stage.
+  print "Liftoff!".
+}
 lock throttle to 1.
 wait until verticalSpeed > 10.
 sas off.
