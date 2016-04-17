@@ -33,17 +33,17 @@ function launchPitch {
 }
 
 function hasFlameout {
-  if maxThrust = 0 {
-    return true.
-  }
+  local hasUllage is false.
   local engs is 0.
   list engines in engs.
   for eng in engs {
-    if eng:ignition and eng:flameout and not eng:multiMode {
+    if eng:title:contains("ullage") or eng:title:contains("sepratron") or eng:tag:contains("ullage") {
+      set hasUllage to hasUllage or (eng:ignition and not eng:flameout).
+    } else if eng:ignition and eng:flameout and not eng:multiMode {
       return true.
     }
   }
-  return false.
+  return maxThrust = 0 or hasUllage.
 }
 
 local launchHeading is 90 - inclination.
@@ -72,9 +72,13 @@ if body:atm:exists {
     lock throttle to 1.
     until apoapsis > launchAltitude {
       wait until apoapsis > launchAltitude or hasFlameout().
+      if hasFlameout() {
+        wait 1.
+      }
       until not hasFlameout() {
-        wait 2.
+        wait 1.
         stage.
+        wait 1. // give KW rockets time to spool up
       }
     }
     lock throttle to 0.
