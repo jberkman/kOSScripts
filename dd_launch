@@ -5,7 +5,7 @@
 @lazyglobal off.
 
 clearscreen.
-print "DunaDirect Launch! v2.1".
+print "DunaDirect Launch! v2.2".
 
 parameter inclination is 0, rendezvous is false.
 
@@ -33,17 +33,20 @@ function launchPitch {
 }
 
 function hasFlameout {
+  local hasEngine is false.
   local hasUllage is false.
   local engs is 0.
   list engines in engs.
   for eng in engs {
     if eng:title:contains("ullage") or eng:title:contains("sepratron") or eng:tag:contains("ullage") {
-      set hasUllage to hasUllage or (eng:ignition and not eng:flameout).
+      set hasUllage to hasUllage or eng:ignition.
     } else if eng:ignition and eng:flameout and not eng:multiMode {
       return true.
+    } else if eng:ignition {
+      set hasEngine to true.
     }
   }
-  return maxThrust = 0 or hasUllage.
+  return maxThrust = 0 or (hasUllage and not hasEngine).
 }
 
 local launchHeading is 90 - inclination.
