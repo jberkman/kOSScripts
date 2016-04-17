@@ -1,0 +1,10 @@
+// boot_ddlnd4 - Initialize CPU for launching & landing w/ navigation.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+for file in list("boot_ddlnd3", "boot_ddnod") {
+	copy file from archive.
+}
+run boot_ddlnd3.
+run boot_ddnod.

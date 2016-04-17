@@ -8,7 +8,7 @@ clearscreen.
 clearvecdraws().
 print "DunaDirect Rendezvous! v2.0".
 
-run once lib_dd_20k.
+run once lib_dd.
 
 local invalidPort is "$INVALID$".
 declare parameter targetPortTag is invalidPort.

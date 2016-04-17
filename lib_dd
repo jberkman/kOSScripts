@@ -1,5 +1,6 @@
-// lib_dd_05k - Launch and node routines.
+// lib_dd - Shared routines.
 // Copyright © 2015 jacob berkman
+// Portions (c) the KSLib team
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
@@ -11,12 +12,35 @@ function clamp {
   return x.
 }
 
+function compassForVec {
+  parameter ves.
+  parameter vec.
+
+  local east is east_for(ves).
+
+  local trig_x is vdot(ves:north:vector, vec).
+  local trig_y is vdot(east, vec).
+
+  local result is arctan2(trig_y, trig_x).
+
+  if result < 0 {
+    return 360 + result.
+  } else {
+    return result.
+  }
+}
+
 function deltaVBurnTime {
   parameter dV.
   if ship:availableThrust = 0 {
     return 0.
   }
   return abs(dV * ship:mass / ship:availableThrust).
+}
+
+function east_for {
+  parameter ves.
+  return vcrs(ves:up:vector, ves:north:vector).
 }
 
 function pitchForVec {
@@ -27,4 +51,8 @@ function pitchForVec {
 
 function steerToDir {
   wait until vAng(steering:vector, ship:facing:vector) < 5.
+}
+
+function steerToVec {
+  wait until vAng(steering, ship:facing:vector) < 5.
 }

@@ -1,0 +1,9 @@
+// boot_ddnod - Initialize CPU for orbital manoeuvres.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+print "Installing Manoeuvre Node Routines.".
+for file in list("dd_node_burn", "dd_rcs_node_burn", "lib_dd") {
+	copy file from archive.
+}

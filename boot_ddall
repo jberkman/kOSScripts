@@ -1,0 +1,10 @@
+// boot_ddall - Initialize CPU for everything.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+for file in list("boot_dddok2", "boot_ddlnd3") {
+	copy file from archive.
+}
+run boot_ddlnd3.
+run boot_dddok2.

@@ -1,0 +1,9 @@
+// boot_dddok - Initialize CPU for docking w/o nav.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+print "Installing Docking Routines.".
+for file in list("dd_rendezvous", "dd_dock", "lib_dd") {
+	copy file from archive.
+}

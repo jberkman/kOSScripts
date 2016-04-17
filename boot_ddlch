@@ -1,0 +1,9 @@
+// boot_ddlch - Initialize CPU for launching.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+print "Installing Launch Routines.".
+for file in list("dd_launch", "lib_dd") {
+	copy file from archive.
+}

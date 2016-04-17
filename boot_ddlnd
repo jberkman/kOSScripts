@@ -1,0 +1,9 @@
+// boot_ddlnd - Initialize CPU for landing w/o navigation.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+print "Installing Landing Routines.".
+for file in list("dd_land", "dd_descent_burn", "dd_suicide_burn", "lib_dd") {
+	copy file from archive.
+}

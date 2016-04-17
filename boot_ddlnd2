@@ -1,0 +1,10 @@
+// boot_ddlnd2 - Initialize CPU for landing w/ navigation.
+// Copyright © 2016 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+for file in list("boot_ddnod", "boot_ddlnd") {
+	copy file from archive.
+}
+run boot_ddlnd.
+run boot_ddnod.

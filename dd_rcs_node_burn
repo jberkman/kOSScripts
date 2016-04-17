@@ -7,7 +7,7 @@
 clearscreen.
 print "DunaDirect RCS Manoeuvre! v0.9".
 
-run once lib_dd_05k.
+run once lib_dd.
 
 local node is nextNode.
 local originalVector to node:deltaV.
