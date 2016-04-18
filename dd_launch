@@ -71,6 +71,9 @@ if status = "prelaunch" {
     if count = 15 {
       set warp to 0.
     }
+    if count <= 10 {
+      print char(7).
+    }
     if preIgnite and count = 3 {
       print "Ignition.".
       global tIgnition is time:seconds.
