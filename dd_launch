@@ -4,12 +4,25 @@
 
 @lazyglobal off.
 
+run once lib_dd.
+
 clearscreen.
 print "DunaDirect Launch! v2.3".
 
-parameter inclination is 0, rendezvous is false.
+local undefined is "$UNDEFINED$".
 
-run once lib_dd.
+parameter arg0key is undefined,
+  arg0value is undefined,
+  arg1key is undefined,
+  arg1value is undefined,
+  arg2key is undefined,
+  arg2value is undefined,
+  arg3key is undefined,
+  arg3value is undefined,
+  arg4key is undefined,
+  arg4value is undefined.
+
+local args is lexicon(arg0key, arg0value, arg1key, arg1value, arg2key, arg2value, arg3key, arg3value, arg4key, arg4value).
 
 function orbitalVelocity {
   parameter orbitable.
@@ -49,11 +62,28 @@ function hasFlameout {
   return maxThrust = 0 or (hasUllage and not hasEngine).
 }
 
-local launchHeading is 90 - inclination.
+local launchHeading is 90.
+if args:hasKey("inc") {
+  set launchHeading to 90 - args["inc"].
+}
+
+local rendezvous is false.
+if args:hasKey("rdv") {
+  set rendezvous to args["rdv"].
+}
+
 local launchAltitude is body:atm:height + 10000.
 if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
 }
+if args:hasKey("alt") {
+  set launchAltitude to args["alt"] * 1000.  
+}
+
+print "Launch Configuration:".
+print "Altitude: " + launchAltitude / 1000.
+print "Inclination: " + (90 - launchHeading).
+print "Rendezvous: " + rendezvous.
 
 set ship:control:pilotmainthrottle to 0.
 sas on.
@@ -67,7 +97,7 @@ if status = "prelaunch" {
   }
   print "T -".
   from { local count is 30. } until count = 0 step { set count to count - 1. wait 1. } do {
-    print count + " " at(4, 1).
+    print count + " " at(4, 5).
     if count = 15 {
       set warp to 0.
     }
@@ -139,7 +169,8 @@ if rendezvous {
   wait until time:seconds >= burnStartTime - 30.
   set warp to 0.
   lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
-  lock steering to lookdirup(heading(launchHeading, burnPitch):vector, heading(launchHeading, -45):vector).
+  lock burnHeading to compassForVec(ship, ship:prograde:forevector).
+  lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
 
   wait until time:seconds >= burnStartTime.
   steerToDir().
