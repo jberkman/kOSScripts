@@ -7,8 +7,9 @@
 run once lib_dd.
 
 clearscreen.
-print "DunaDirect Launch! v2.3".
+print "DunaDirect Launch! v2.9".
 
+// Parse options 
 local undefined is "$UNDEFINED$".
 
 parameter arg0key is undefined,
@@ -24,47 +25,14 @@ parameter arg0key is undefined,
 
 local args is lexicon(arg0key, arg0value, arg1key, arg1value, arg2key, arg2value, arg3key, arg3value, arg4key, arg4value).
 
-function orbitalVelocity {
-  parameter orbitable.
-  parameter altitude.
-  parameter a is orbitable:obt:semiMajorAxis.
-  local r is altitude + orbitable:body:radius.
-  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
-}
-
-function launchPitch {
-  local shipPitch is pitchForVec(ship, ship:velocity:surface).
-  local goalHeight is 6 * body:atm:height / 7.
-  if apoapsis > goalHeight / 2 {
-    local pitch is 90 - 90 * min(1.05, 0.5 + (apoapsis - goalHeight / 2) / goalHeight).
-    return clamp(pitch, -8 * pitchForVec(ship, ship:velocity:orbit), shipPitch + 10).
-  }
-  if apoapsis < goalHeight / 4 {
-    return 90 - 30 * apoapsis / (goalHeight / 4).
-  }
-  return clamp(45, shipPitch - 2.5, shipPitch + 2.5).
-}
-
-function hasFlameout {
-  local hasEngine is false.
-  local hasUllage is false.
-  local engs is 0.
-  list engines in engs.
-  for eng in engs {
-    if eng:title:contains("ullage") or eng:title:contains("sepratron") or eng:tag:contains("ullage") {
-      set hasUllage to hasUllage or eng:ignition.
-    } else if eng:ignition and eng:flameout and not eng:multiMode {
-      return true.
-    } else if eng:ignition {
-      set hasEngine to true.
-    }
-  }
-  return maxThrust = 0 or (hasUllage and not hasEngine).
-}
-
-local launchHeading is 90.
+local targetInclination is 0.
 if args:hasKey("inc") {
-  set launchHeading to 90 - args["inc"].
+  set targetInclination to args["inc"].
+}
+
+local launchAzimuth is arcsin(clamp(cos(targetInclination) / cos(ship:latitude), -1, 1)).
+if args:hasKey("azm") {
+  set launchAzimuth to args["azm"].
 }
 
 local rendezvous is false.
@@ -80,12 +48,22 @@ if args:hasKey("alt") {
   set launchAltitude to args["alt"] * 1000.  
 }
 
-print "Launch Configuration:".
-print "Altitude: " + launchAltitude / 1000.
-print "Inclination: " + (90 - launchHeading).
-print "Rendezvous: " + rendezvous.
+local pitchRate is 1.
+if args:hasKey("pit") {
+  set pitchRate to args["pit"].
+}
 
-set ship:control:pilotmainthrottle to 0.
+print "Launch Configuration:".
+print "Altitude (alt): " + launchAltitude / 1000 + " km".
+print "Rendezvous (rdv): " + rendezvous.
+if not args:hasKey("azm") {
+  print "Inclination (inc): " + targetInclination + " deg".
+}
+print "Azimuth (azm): " + launchAzimuth + " deg".
+print "Pitch Rate (pit): " + pitchRate + " deg/s".
+
+// Initialize and begin countdown.
+set ship:control:pilotMainThrottle to 0.
 sas on.
 if status = "prelaunch" {
   local preIgnite is false.
@@ -97,7 +75,7 @@ if status = "prelaunch" {
   }
   print "T -".
   from { local count is 30. } until count = 0 step { set count to count - 1. wait 1. } do {
-    print count + " " at(4, 5).
+    print count + " " at(4, 7).
     if count = 15 {
       set warp to 0.
     }
@@ -115,21 +93,82 @@ if status = "prelaunch" {
   stage.
   print "Liftoff!".
 }
+
+// Wait to clear tower.
+local rollAlt is alt:radar + 60.
 lock throttle to 1.
-wait until verticalSpeed > 10.
+wait until alt:radar > rollAlt.
 sas off.
-local lock lookAt to heading(launchHeading, 90).
-local lock lookUp to heading(launchHeading, -45).
+
+// Pitch program.
+local tPitch is time:seconds.
+local gravTurnPitch is 0.
+
+local PITCH_PHASE is 0.
+local GRAV_TURN_PHASE is 1.
+local LIN_TAN_PHASE is 2.
+
+local VAC_PHASE_1 is 3.
+local VAC_PHASE_2 is 4.
+
+local launchPhase is PITCH_PHASE.
+local prevQ is ship:q.
+
+function launchPitch {
+  if launchPhase = PITCH_PHASE {
+    if ship:q >= prevQ and ship:q < 0.2 {
+      set prevQ to ship:q.
+      return 90 - pitchRate * (time:seconds - tPitch).
+    }
+    print "Beginning gravity turn.".
+    set launchPhase to GRAV_TURN_PHASE.
+  }
+
+  if launchPhase = GRAV_TURN_PHASE {
+    if ship:q > 0.02 {
+      return pitchForVec(ship, ship:velocity:surface).
+    }
+    print "Gravity turn complete.".
+    set tPitch to time:seconds.
+    set gravTurnPitch to pitchForVec(ship, ship:velocity:surface).
+    set launchPhase to LIN_TAN_PHASE.
+  }
+
+  if launchPhase = LIN_TAN_PHASE {
+    return max(0, gravTurnPitch - 4 * (time:seconds - tPitch)).
+  }
+
+  if launchPhase = VAC_PHASE_1 {
+    return 67.5.
+  }
+
+  return 22.5.
+}
+
+local lock lookAt to heading(launchAzimuth, launchPitch()).
+local lock lookUp to heading(launchAzimuth, -45).
 lock steering to lookdirup(lookAt:vector, lookUp:vector).
 
-if body:atm:exists {
-  wait until verticalSpeed > 50.
-  lock targetPitch to goalPitch().
-  lock lookAt to heading(launchHeading, launchPitch()).
+// Staging control
+function hasFlameout {
+  local hasEngine is false.
+  local hasUllage is false.
+  local engs is 0.
+  list engines in engs.
+  for eng in engs {
+    if eng:title:contains("ullage") or eng:title:contains("sepratron") or eng:tag:contains("ullage") {
+      set hasUllage to hasUllage or eng:ignition.
+    } else if eng:ignition and eng:flameout and not eng:multiMode {
+      return true.
+    } else if eng:ignition {
+      set hasEngine to true.
+    }
+  }
+  return maxThrust = 0 or (hasUllage and not hasEngine).
+}
 
+if body:atm:exists {
   until altitude > body:atm:height {
-    set warp to 0.
-    wait until warp = 0.
     lock throttle to 1.
     until apoapsis > launchAltitude {
       wait until apoapsis > launchAltitude or hasFlameout().
@@ -144,14 +183,23 @@ if body:atm:exists {
     }
     lock throttle to 0.
     wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
+    set warp to 0.
+    wait until warp = 0.
   }
 } else {
-	wait until apoapsis > altitude + 1000 - alt:radar.
-  lock lookAt to heading(launchHeading, 22.5).
   wait until apoapsis > launchAltitude.
 }
 
 lock throttle to 0.
+
+// Circularize etc.
+function orbitalVelocity {
+  parameter orbitable.
+  parameter altitude.
+  parameter a is orbitable:obt:semiMajorAxis.
+  local r is altitude + orbitable:body:radius.
+  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
+}
 
 if rendezvous {
 	run dd_rendezvous.
