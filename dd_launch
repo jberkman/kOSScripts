@@ -31,6 +31,9 @@ if args:hasKey("inc") {
 }
 
 local launchAzimuth is arcsin(clamp(cos(targetInclination) / cos(ship:latitude), -1, 1)).
+if targetInclination < 0 {
+  set launchAzimuth to 180 - launchAzimuth.
+}
 if args:hasKey("azm") {
   set launchAzimuth to args["azm"].
 }
@@ -48,145 +51,58 @@ if args:hasKey("alt") {
   set launchAltitude to args["alt"] * 1000.  
 }
 
-local pitchRate is 1.
+local pitchRate is 2 / 3.
 if args:hasKey("pit") {
   set pitchRate to args["pit"].
 }
 
+print " ".
 print "Launch Configuration:".
-print "Altitude (alt): " + launchAltitude / 1000 + " km".
 print "Rendezvous (rdv): " + rendezvous.
-if not args:hasKey("azm") {
-  print "Inclination (inc): " + targetInclination + " deg".
+print "Altitude (alt): " + round(launchAltitude / 1000, 3) + " km".
+if body:atm:exists {
+  print "Pitch Rate (pit): " + round(pitchRate, 3) + " deg/s".
 }
-print "Azimuth (azm): " + launchAzimuth + " deg".
-print "Pitch Rate (pit): " + pitchRate + " deg/s".
+if not args:hasKey("azm") {
+  print "Inclination (inc): " + round(targetInclination, 3) + " deg".
+}
+print "Azimuth (azm): " + round(launchAzimuth, 3) + " deg".
+if not body:atm:exists {
+  print " ".
+}
+if args:hasKey("azm") {
+  print " ".
+}
+print " ".
+print " ".
 
 // Initialize and begin countdown.
 set ship:control:pilotMainThrottle to 0.
 sas on.
-if status = "prelaunch" {
-  local preIgnite is false.
-  for module in ship:modulesNamed("LaunchClamp") {
-    if module:part:stage < stage:number - 1 {
-      set preIgnite to true.
-      break.
-    }
-  }
-  print "T -".
-  from { local count is 30. } until count = 0 step { set count to count - 1. wait 1. } do {
-    print count + " " at(4, 7).
-    if count = 15 {
-      set warp to 0.
-    }
-    if count <= 10 {
-      print char(7).
-    }
-    if preIgnite and count = 3 {
-      print "Ignition.".
-      global tIgnition is time:seconds.
-      lock throttle to (time:seconds - tIgnition) / 4 + 0.5.
-      stage.
-    }
-  }
-  print 0 at(4, 1).
-  stage.
-  print "Liftoff!".
-}
-
-// Wait to clear tower.
-local rollAlt is alt:radar + 60.
-lock throttle to 1.
-wait until alt:radar > rollAlt.
-sas off.
-
-// Pitch program.
-local tPitch is time:seconds.
-local gravTurnPitch is 0.
-
-local PITCH_PHASE is 0.
-local GRAV_TURN_PHASE is 1.
-local LIN_TAN_PHASE is 2.
-
-local VAC_PHASE_1 is 3.
-local VAC_PHASE_2 is 4.
-
-local launchPhase is PITCH_PHASE.
-local prevQ is ship:q.
-
-function launchPitch {
-  if launchPhase = PITCH_PHASE {
-    if ship:q >= prevQ and ship:q < 0.2 {
-      set prevQ to ship:q.
-      return 90 - pitchRate * (time:seconds - tPitch).
-    }
-    print "Beginning gravity turn.".
-    set launchPhase to GRAV_TURN_PHASE.
-  }
-
-  if launchPhase = GRAV_TURN_PHASE {
-    if ship:q > 0.02 {
-      return pitchForVec(ship, ship:velocity:surface).
-    }
-    print "Gravity turn complete.".
-    set tPitch to time:seconds.
-    set gravTurnPitch to pitchForVec(ship, ship:velocity:surface).
-    set launchPhase to LIN_TAN_PHASE.
-  }
-
-  if launchPhase = LIN_TAN_PHASE {
-    return max(0, gravTurnPitch - 4 * (time:seconds - tPitch)).
-  }
-
-  if launchPhase = VAC_PHASE_1 {
-    return 67.5.
-  }
-
-  return 22.5.
-}
-
-local lock lookAt to heading(launchAzimuth, launchPitch()).
-local lock lookUp to heading(launchAzimuth, -45).
-lock steering to lookdirup(lookAt:vector, lookUp:vector).
-
-// Staging control
-function hasFlameout {
-  local hasEngine is false.
-  local hasUllage is false.
-  local engs is 0.
-  list engines in engs.
-  for eng in engs {
-    if eng:title:contains("ullage") or eng:title:contains("sepratron") or eng:tag:contains("ullage") {
-      set hasUllage to hasUllage or eng:ignition.
-    } else if eng:ignition and eng:flameout and not eng:multiMode {
-      return true.
-    } else if eng:ignition {
-      set hasEngine to true.
-    }
-  }
-  return maxThrust = 0 or (hasUllage and not hasEngine).
-}
+setMET(time:seconds).
 
 if body:atm:exists {
-  until altitude > body:atm:height {
-    lock throttle to 1.
-    until apoapsis > launchAltitude {
-      wait until apoapsis > launchAltitude or hasFlameout().
-      if hasFlameout() {
-        wait 1.
-      }
-      until not hasFlameout() {
-        wait 1.
-        stage.
-        wait 1. // give KW rockets time to spool up
-      }
-    }
-    lock throttle to 0.
-    wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
-    set warp to 0.
-    wait until warp = 0.
-  }
+  run dd_launch_atm(launchAltitude, launchAzimuth, pitchRate).
 } else {
+  // Wait to clear tower.
+  local rollAlt is alt:radar + 60.
+  lock throttle to 1.
+  wait until alt:radar > rollAlt.
+  sas off.
+
+  // Pitch program.
+  local tPitch is time:seconds.
+
+  function launchPitch {
+    if apoapsis < altitude + 1000 - alt:radar {
+      return 67.5.
+    }
+    return 22.5.    
+  }
+
+  local lock lookAt to heading(launchAzimuth, launchPitch()).
+  local lock lookUp to heading(launchAzimuth, -45).
+  lock steering to lookDirUp(lookAt:vector, lookUp:vector).
   wait until apoapsis > launchAltitude.
 }
 
@@ -202,7 +118,7 @@ function orbitalVelocity {
 }
 
 if rendezvous {
-	run dd_rendezvous.
+  run dd_rendezvous.
 } else {
   local goalSemiMajorAxis is body:radius + apoapsis.
   local initialVelocity is orbitalVelocity(ship, apoapsis).
@@ -212,7 +128,7 @@ if rendezvous {
   local burnTime is deltaVBurnTime(deltaV).
   lock burnStartTime to time:seconds + eta:apoapsis - burnTime / 2.
 
-  print "burn time: " + round(burnTime) + " dV:" + round(deltaV).
+  mprint("Circularization burn time: " + round(burnTime) + " dV:" + round(deltaV)).
 
   wait until time:seconds >= burnStartTime - 30.
   set warp to 0.
@@ -229,4 +145,5 @@ if rendezvous {
   lock throttle to 0.
   unlock steering.
   unlock throttle.
+  set ship:control:pilotMainThrottle to 0.
 }

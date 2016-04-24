@@ -4,6 +4,6 @@
 
 @lazyglobal off.
 print "Installing Launch Routines.".
-for file in list("dd_launch", "lib_dd") {
+for file in list("dd_launch", "dd_launch_atm", "lib_dd") {
 	copy file from archive.
 }

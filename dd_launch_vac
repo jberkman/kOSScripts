@@ -1,0 +1,31 @@
+// launch.ks - Launch into a parking suborbital trajectory.
+// Copyright © 2015 jacob berkman
+// This file is distributed under the terms of the MIT license.
+
+@lazyglobal off.
+
+run once lib_dd.
+parameter launchAzimuth, launchAltitude.
+
+// Wait to clear tower.
+local rollAlt is alt:radar + 60.
+lock throttle to 1.
+wait until alt:radar > rollAlt.
+sas off.
+
+// Pitch program.
+local tPitch is time:seconds.
+
+function launchPitch {
+  if apoapsis < altitude + 1000 - alt:radar {
+    return 67.5.
+  }
+  return 22.5.    
+}
+
+local lock lookAt to heading(launchAzimuth, launchPitch()).
+local lock lookUp to heading(launchAzimuth, -45).
+lock steering to lookDirUp(lookAt:vector, lookUp:vector).
+wait until apoapsis > launchAltitude.
+
+lock throttle to 0.

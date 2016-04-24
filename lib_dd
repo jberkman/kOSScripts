@@ -43,10 +43,28 @@ function east_for {
   return vcrs(ves:up:vector, ves:north:vector).
 }
 
+local tMET is time:seconds.
+
+function mprint {
+  parameter args.
+  local t is round(time:seconds - tMET).
+  if t > 0 {
+    set t to "+" + t.
+  } else if t = 0 {
+    set t to "-" + t.
+  }
+  print "[" + t + "] " + args.
+}
+
 function pitchForVec {
   parameter ves.
   parameter vec.
   return 90 - vang(ves:up:vector, vec).
+}
+
+function setMET {
+  parameter newValue.
+  set tMET to newValue.
 }
 
 function steerToDir {
