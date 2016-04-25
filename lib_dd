@@ -53,7 +53,7 @@ function mprint {
   } else if t = 0 {
     set t to "-" + t.
   }
-  print "[" + t + "] " + args.
+  print "[T" + t + " " + round(ship:altitude / 1000, 1) + "km] " + args.
 }
 
 function pitchForVec {

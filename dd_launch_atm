@@ -56,6 +56,8 @@ local prevQ is ship:q.
 
 lock lookAt to heading(launchAzimuth, 90 - pitchRate * (time:seconds - tPitch)):vector.
 lock lookUp to heading(launchAzimuth, -45):vector.
+
+mprint("Beginning roll program and pitch manoeuvre.").
 lock steering to lookDirUp(lookAt, lookUp).
 
 global maxQValue is 0.
@@ -66,12 +68,12 @@ function maxQ {
 
 global maxQReached is false.
 when ship:q < maxQ() then {
+  mprint("Reaching max Q: " + round(maxQ(), 2) + ".").
   set maxQReached to true.
-  mprint("Reaching maxQ (" + round(ship:q, 2) + ")").
 }
 
 when maxQReached or ship:q > 0.2 then {
-  mprint("Beginning gravity turn phase.").
+  mprint("Transitioning to gravity turn.").
   lock lookAt to ship:velocity:surface.
   lock lookUp to heading(compassForVec(ship, ship:velocity:surface), -45):vector.
   global maxQTime is time:seconds.
@@ -105,6 +107,7 @@ until altitude > body:atm:height {
   until apoapsis > launchAltitude {
     wait until apoapsis > launchAltitude or hasFlameout().
     if hasFlameout() {
+      mprint("Enginge cutout. apo: " + round(ship:apoapsis / 1000, 2) + "km.").
       wait 1.
     }
     until not hasFlameout() {
@@ -114,7 +117,7 @@ until altitude > body:atm:height {
     }
   }
   lock throttle to 0.
-  mprint("Beginning coast phase.").
+  mprint("Beginning coast phase. peri: " + round(ship:periapsis / 1000, 2) + "km.").
   wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
   set warp to 0.
   wait until warp = 0.
