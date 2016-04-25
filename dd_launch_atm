@@ -102,8 +102,9 @@ function hasFlameout {
   return maxThrust = 0 or (hasUllage and not hasEngine).
 }
 
+local burnPID to pidLoop(0.1, 0, 0, 0, 1).
 until altitude > body:atm:height {
-  lock throttle to 1.
+  lock throttle to burnPID:update(time:seconds, ship:apoapsis - launchAltitude).
   until apoapsis > launchAltitude {
     wait until apoapsis > launchAltitude or hasFlameout().
     if hasFlameout() {
