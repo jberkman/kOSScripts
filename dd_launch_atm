@@ -107,7 +107,7 @@ until altitude > body:atm:height {
   lock throttle to burnPID:update(time:seconds, ship:apoapsis - launchAltitude).
   until apoapsis > launchAltitude {
     wait until apoapsis > launchAltitude or hasFlameout().
-    if hasFlameout() {
+    if apoapsis < launchAltitude {
       mprint("Enginge cutout. apo: " + round(ship:apoapsis / 1000, 2) + "km.").
       wait 1.
     }
