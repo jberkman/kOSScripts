@@ -5,6 +5,8 @@
 
 @lazyglobal off.
 
+global ddCfg = lexicon().
+
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -43,6 +45,25 @@ function east_for {
   return vcrs(ves:up:vector, ves:north:vector).
 }
 
+local loggedEvent is false.
+function logLaunchEvent {
+  parameter events.
+  local fileName is ship:name + "-" + body:name + "-launch.csv".
+  local fp is false.
+  if archive:exists(fileName) {
+    set fp to archive:open(fileName).
+    if loggedEvent {
+      fp:write(",").
+    } else {
+      fp:writeln("").
+      set loggedEvent to true.
+    }
+  } else {
+    set fp to archive:create(fileName).
+  }
+  fp:write(events:join(",")).
+}
+
 local tMET is time:seconds.
 
 function mprint {
@@ -67,10 +88,66 @@ function setMET {
   set tMET to newValue.
 }
 
+function stageDeltaV {
+  local ispNum is 0.
+  local ispDenum is 0.
+  local engList is 0.
+  list engines in engList.
+  for eng in engList {
+    if eng:ignition and not eng:flameout {
+      set ispNum to ispNum + eng:availableThrust.
+      set ispDenum to ispDenum + eng:availableThrust / eng:isp.
+    }
+  }
+  if ispDenum = 0 {
+    return 0.
+  }
+  local fuelMass is 0.
+  local resources is stage:resourcesLex.
+  for fuel in list("LiquidFuel", "Oxidizer") {
+    if resources:hasKey(fuel) {
+      local resource is resources[fuel].
+      set fuelMass to fuelMass + resource:amount * resource:density.
+    }
+  }
+  return 9.81 * ispNum * ln(mass / (mass - fuelMass)) / ispDenum.
+}
+
 function steerToDir {
   wait until vAng(steering:vector, ship:facing:vector) < 5.
 }
 
 function steerToVec {
   wait until vAng(steering, ship:facing:vector) < 5.
+}
+
+function triggerEvent {
+    parameter name.
+    if not ddCfg:hasKey(name) {
+      return.
+    }
+    local t is ddCfg[name].
+    if t = "ag1" { AG1 on. }
+    else if t = "ag2" { AG2 on. }
+    else if t = "ag3" { AG3 on. }
+    else if t = "ag4" { AG4 on. }
+    else if t = "ag5" { AG5 on. }
+    else if t = "ag6" { AG6 on. }
+    else if t = "ag7" { AG7 on. }
+    else if t = "ag8" { AG8 on. }
+    else if t = "ag9" { AG9 on. }
+    else if t = "ag10" { AG10 on. }
+}
+
+function unionLex {
+  parameter lhs, rhs.
+  for key in rhs:keys {
+    lhs[key] = rhs[key].
+  }
+}
+
+for file in list("dd.cfg", shipName + ".cfg", shipName + "-" + body:name + ".cfg") {
+  if exists(file) {
+    unionLex(ddCfg, readJSON(file)).
+  }
 }
