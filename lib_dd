@@ -5,7 +5,7 @@
 
 @lazyglobal off.
 
-global ddCfg = lexicon().
+global ddCfg is lexicon().
 
 function clamp {
   parameter x, l, h.
@@ -127,6 +127,7 @@ function triggerEvent {
       return.
     }
     local t is ddCfg[name].
+    print "Running trigger " + t + " for event " + name.
     if t = "ag1" { AG1 on. }
     else if t = "ag2" { AG2 on. }
     else if t = "ag3" { AG3 on. }
@@ -142,7 +143,7 @@ function triggerEvent {
 function unionLex {
   parameter lhs, rhs.
   for key in rhs:keys {
-    lhs[key] = rhs[key].
+    set lhs[key] to rhs[key].
   }
 }
 

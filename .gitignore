@@ -4,3 +4,4 @@ lib_*.ks
 
 *.DS_Store
 *.csv
+*.cfg
