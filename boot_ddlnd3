@@ -3,8 +3,5 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-print "Installing Vacuum Launch Routines.".
-for file in list("dd_launch", "boot_ddlnd") {
-	copy file from archive.
-}
-run boot_ddlnd.
+copy dd_install from archive.
+run dd_install(list("vacLaunch", "land")).

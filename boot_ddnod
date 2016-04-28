@@ -3,7 +3,5 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-print "Installing Manoeuvre Node Routines.".
-for file in list("dd_node_burn", "dd_rcs_node_burn", "lib_dd") {
-	copy file from archive.
-}
+copy dd_install from archive.
+run dd_install(list("node")).

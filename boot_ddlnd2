@@ -3,8 +3,5 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-for file in list("boot_ddnod", "boot_ddlnd") {
-	copy file from archive.
-}
-run boot_ddlnd.
-run boot_ddnod.
+copy dd_install from archive.
+run dd_install(list("land", "node")).

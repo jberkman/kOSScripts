@@ -3,7 +3,5 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-print "Installing Landing Routines.".
-for file in list("dd_land", "dd_descent_burn", "dd_suicide_burn", "lib_dd") {
-	copy file from archive.
-}
+copy dd_install from archive.
+run dd_install(list("land")).

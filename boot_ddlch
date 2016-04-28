@@ -3,7 +3,5 @@
 // This file is distributed under the terms of the MIT license.
 
 @lazyglobal off.
-print "Installing Launch Routines.".
-for file in list("dd_launch", "dd_launch_atm", "lib_dd") {
-	copy file from archive.
-}
+copy dd_install from archive.
+run dd_install(list("launch")).
