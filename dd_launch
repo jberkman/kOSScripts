@@ -83,7 +83,7 @@ sas on.
 setMET(time:seconds).
 
 if body:atm:exists {
-  run dd_launch_atm(launchAltitude, launchAzimuth, pitchRate).
+  run lib_dd_launch(launchAltitude, launchAzimuth, pitchRate).
 } else {
   // Wait to clear tower.
   local rollAlt is alt:radar + 60.
@@ -108,7 +108,7 @@ if body:atm:exists {
 }
 
 lock throttle to 0.
-logLogEvents(list(obt:inclination)).
+logLaunchEvent(list(obt:inclination)).
 
 // Circularize etc.
 function orbitalVelocity {
@@ -131,7 +131,7 @@ if rendezvous {
   lock burnStartTime to time:seconds + eta:apoapsis - burnTime / 2.
 
   mprint("Circularization burn time: " + round(burnTime) + " dV:" + round(deltaV)).
-  logLaunchEvents(list(deltaV)).
+  logLaunchEvent(list(deltaV)).
 
   wait until time:seconds >= burnStartTime - 30.
   set warp to 0.
@@ -150,3 +150,4 @@ if rendezvous {
   unlock throttle.
   set ship:control:pilotMainThrottle to 0.
 }
+logLaunchEvent(list(stageDeltaV())).

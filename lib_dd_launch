@@ -1,4 +1,4 @@
-// launch.ks - Launch into a parking suborbital trajectory.
+// lib_dd_launch - Launch into a parking suborbital trajectory.
 // Copyright © 2015 jacob berkman
 // This file is distributed under the terms of the MIT license.
 
@@ -44,6 +44,7 @@ if status = "prelaunch" {
 // Wait to clear tower.
 local rollAlt is alt:radar + 60.
 lock throttle to 1.
+logLaunchEvent(list(availableThrust * (body:radius + altitude) ^ 2 / mass / body:mu)).
 wait until alt:radar > rollAlt.
 sas off.
 
@@ -109,6 +110,7 @@ until altitude > body:atm:height {
     wait until apoapsis > launchAltitude or hasFlameout().
     if apoapsis < launchAltitude {
       mprint("Enginge cutout. apo: " + round(ship:apoapsis / 1000, 2) + "km.").
+      logLaunchEvent(list(altitude, apoapsis)).
       wait 1.
     }
     until not hasFlameout() {
@@ -119,6 +121,7 @@ until altitude > body:atm:height {
   }
   lock throttle to 0.
   mprint("Beginning coast phase. peri: " + round(ship:periapsis / 1000, 2) + "km.").
+  logLaunchEvent(list(altitude, periapsis)).
   wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
   set warp to 0.
   wait until warp = 0.
