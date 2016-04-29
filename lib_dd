@@ -121,25 +121,6 @@ function steerToVec {
   wait until vAng(steering, ship:facing:vector) < 5.
 }
 
-function triggerEvent {
-    parameter name.
-    if not ddCfg:hasKey(name) {
-      return.
-    }
-    local t is ddCfg[name].
-    print "Running trigger " + t + " for event " + name.
-    if t = "ag1" { AG1 on. }
-    else if t = "ag2" { AG2 on. }
-    else if t = "ag3" { AG3 on. }
-    else if t = "ag4" { AG4 on. }
-    else if t = "ag5" { AG5 on. }
-    else if t = "ag6" { AG6 on. }
-    else if t = "ag7" { AG7 on. }
-    else if t = "ag8" { AG8 on. }
-    else if t = "ag9" { AG9 on. }
-    else if t = "ag10" { AG10 on. }
-}
-
 function unionLex {
   parameter lhs, rhs.
   for key in rhs:keys {

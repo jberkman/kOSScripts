@@ -11,66 +11,57 @@ print "DunaDirect Launch! v2.9".
 
 // Parse options 
 local undefined is "$UNDEFINED$".
-
-parameter arg0key is undefined,
-  arg0value is undefined,
-  arg1key is undefined,
-  arg1value is undefined,
-  arg2key is undefined,
-  arg2value is undefined,
-  arg3key is undefined,
-  arg3value is undefined,
-  arg4key is undefined,
-  arg4value is undefined.
-
-local args is lexicon(arg0key, arg0value, arg1key, arg1value, arg2key, arg2value, arg3key, arg3value, arg4key, arg4value).
+parameter options is undefined.
+if options <> undefined {
+  unionLex(ddCfg, options).
+}
 
 local targetInclination is 0.
-if args:hasKey("inc") {
-  set targetInclination to args["inc"].
+if ddCfg:hasKey("launch.inclination") {
+  set targetInclination to ddCfg["launch.inclination"].
 }
 
 local launchAzimuth is arcsin(clamp(cos(targetInclination) / cos(ship:latitude), -1, 1)).
 if targetInclination < 0 {
   set launchAzimuth to 180 - launchAzimuth.
 }
-if args:hasKey("azm") {
-  set launchAzimuth to args["azm"].
+if ddCfg:hasKey("launch.azimuth") {
+  set launchAzimuth to ddCfg["launch.azimuth"].
 }
 
 local rendezvous is false.
-if args:hasKey("rdv") {
-  set rendezvous to args["rdv"].
+if ddCfg:hasKey("launch.rendezvous") {
+  set rendezvous to ddCfg["launch.rendezvous"].
 }
 
 local launchAltitude is body:atm:height + 10000.
 if rendezvous {
 	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
 }
-if args:hasKey("alt") {
-  set launchAltitude to args["alt"] * 1000.  
+if ddCfg:hasKey("launch.altitude") {
+  set launchAltitude to ddCfg["launch.altitude"] * 1000.  
 }
 
-local pitchRate is 2 / 3.
-if args:hasKey("pit") {
-  set pitchRate to args["pit"].
+local pitchRate is 0.7.
+if ddCfg:hasKey("launch.pitchRate") {
+  set pitchRate to ddCfg["launch.pitchRate"].
 }
 
 print " ".
 print "Launch Configuration:".
-print "Rendezvous (rdv): " + rendezvous.
-print "Altitude (alt): " + round(launchAltitude / 1000, 3) + " km".
+print "launch.rendezvous: " + rendezvous.
+print "launch.altitude: " + round(launchAltitude / 1000, 3) + " km".
 if body:atm:exists {
-  print "Pitch Rate (pit): " + round(pitchRate, 3) + " deg/s".
+  print "launch.pitchRate: " + round(pitchRate, 3) + " deg/s".
 }
-if not args:hasKey("azm") {
-  print "Inclination (inc): " + round(targetInclination, 3) + " deg".
+if not ddCfg:hasKey("launch.azimuth") {
+  print "launch.inclination: " + round(targetInclination, 3) + " deg".
 }
-print "Azimuth (azm): " + round(launchAzimuth, 3) + " deg".
+print "launch.azimuth: " + round(launchAzimuth, 3) + " deg".
 if not body:atm:exists {
   print " ".
 }
-if args:hasKey("azm") {
+if ddCfg:hasKey("launch.azimuth") {
   print " ".
 }
 print " ".
@@ -90,7 +81,6 @@ if body:atm:exists {
   lock throttle to 1.
   wait until alt:radar > rollAlt.
   sas off.
-  triggerEvent("lchRoll").
   // Pitch program.
   local tPitch is time:seconds.
 
@@ -105,7 +95,6 @@ if body:atm:exists {
   local lock lookUp to heading(launchAzimuth, -45).
   lock steering to lookDirUp(lookAt:vector, lookUp:vector).
   wait until apoapsis > launchAltitude.
-  triggerEvent("lchMECO").
 }
 
 lock throttle to 0.
@@ -151,5 +140,6 @@ if rendezvous {
   unlock throttle.
   set ship:control:pilotMainThrottle to 0.
 }
-logLaunchEvent(list(stageDeltaV())).
-triggerEvent("lchOrbital").
+local deltaV is stageDeltaV().
+logLaunchEvent(list(deltaV)).
+print "Launch complete. Remaining dV: " + deltaV.

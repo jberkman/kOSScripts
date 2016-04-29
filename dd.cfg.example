@@ -1,0 +1,14 @@
+{
+    "entries": [
+        "launch.ignition", "",
+        "launch.liftoff", "",
+        "launch.rollProgram", "",
+        "launch.gravityTurn", "",
+        "launch.maxQ", "",
+        "launch.horizontalFlight", "",
+        "launch.MECO", "",
+        "launch.SECO", "",
+        "launch.space", ""
+    ],
+    "$type": "kOS.Safe.Encapsulation.Lexicon"
+}

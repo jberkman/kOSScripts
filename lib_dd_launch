@@ -8,7 +8,31 @@ parameter launchAltitude, launchAzimuth, pitchRate.
 
 run once lib_dd.
 
+local triggersEnabled is false.
+function triggerEvent {
+    parameter name.
+    if not triggersEnabled or not ddCfg:hasKey(name) {
+      return.
+    }
+    local t is ddCfg[name].
+    if t = "" {
+      return.
+    }
+    print "Running trigger " + t + " for event " + name.
+    if t = "ag1" { AG1 on. }
+    else if t = "ag2" { AG2 on. }
+    else if t = "ag3" { AG3 on. }
+    else if t = "ag4" { AG4 on. }
+    else if t = "ag5" { AG5 on. }
+    else if t = "ag6" { AG6 on. }
+    else if t = "ag7" { AG7 on. }
+    else if t = "ag8" { AG8 on. }
+    else if t = "ag9" { AG9 on. }
+    else if t = "ag10" { AG10 on. }
+}
+
 if status = "prelaunch" {
+  set triggersEnabled to true.
   local preIgnite is false.
   for module in ship:modulesNamed("LaunchClamp") {
     if module:part:stage < stage:number - 1 {
@@ -34,20 +58,24 @@ if status = "prelaunch" {
       global tIgnition is time:seconds.
       lock throttle to (time:seconds - tIgnition) / 4 + 0.5.
       stage.
+      triggerEvent("launch.ignition").
     }
   }
   print 0 at(4, 9).
   stage.
   mprint("Liftoff!").
+  if not preIgnite {
+    triggerEvent("launch.ignition").
+  }
 }
 
 // Wait to clear tower.
 local rollAlt is alt:radar + 60.
 lock throttle to 1.
+triggerEvent("launch.liftoff").
 logLaunchEvent(list(availableThrust * (body:radius + altitude) ^ 2 / mass / body:mu)).
 wait until alt:radar > rollAlt.
 sas off.
-triggerEvent("lchRoll").
 
 // Pitch program.
 local tPitch is time:seconds.
@@ -61,6 +89,7 @@ lock lookUp to heading(launchAzimuth, -45):vector.
 
 mprint("Beginning roll program and pitch manoeuvre.").
 lock steering to lookDirUp(lookAt, lookUp).
+triggerEvent("launch.rollProgram").
 
 global maxQValue is 0.
 function maxQ {
@@ -72,7 +101,7 @@ global maxQReached is false.
 when ship:q < maxQ() then {
   mprint("Reaching max Q: " + round(maxQ(), 2) + ".").
   set maxQReached to true.
-  triggerEvent("lchMaxQ").
+  triggerEvent("launch.maxQ").
 }
 
 when maxQReached or ship:q > 0.2 then {
@@ -81,11 +110,11 @@ when maxQReached or ship:q > 0.2 then {
   lock lookUp to heading(compassForVec(ship, ship:velocity:surface), -45):vector.
   global maxQTime is time:seconds.
   global maxQPitch is pitchForVec(ship, ship:velocity:surface).
-  triggerEvent("lchGravTurn").
+  triggerEvent("launch.gravityTurn").
   when ship:q < 0.02 then {
     mprint("Transitioning to horizontal flight.").
     lock lookAt to heading(compassForVec(ship, ship:velocity:orbit), max(0, maxQPitch - 4 * (time:seconds - maxQTime))):vector.
-    triggerEvent("lchHoriz").
+    triggerEvent("launch.horizontalFlight").
   }
 }
 
@@ -116,7 +145,7 @@ until altitude > body:atm:height {
       mprint("Enginge cutout. apo: " + round(ship:apoapsis / 1000, 2) + "km.").
       logLaunchEvent(list(altitude, apoapsis)).
       if maxQReached {
-        triggerEvent("lchMECO").
+        triggerEvent("launch.MECO").
       }
       wait 1.
     }
@@ -129,11 +158,11 @@ until altitude > body:atm:height {
   lock throttle to 0.
   mprint("Beginning coast phase. peri: " + round(ship:periapsis / 1000, 2) + "km.").
   logLaunchEvent(list(altitude, periapsis)).
-  triggerEvent("lchSECO").
+  triggerEvent("launch.SECO").
   wait until altitude > body:atm:height or apoapsis < body:atm:height + 5000.
   set warp to 0.
   wait until warp = 0.
 }
 
 lock throttle to 0.
-triggerEvent("lchSpace").
+triggerEvent("launch.space").
