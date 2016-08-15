@@ -15,7 +15,7 @@ function install {
 	print "[" + label + "]".
 	for file in files {
 		if feature <> true or archive:exists(file) {
-			copy file from archive.
+			copyPath("0:/" + file, "").
 		}
 	}
 }
