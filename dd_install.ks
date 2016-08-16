@@ -38,4 +38,5 @@ if features = "reset" {
 	install("dock", list("dd_rendezvous", "dd_dock"), "rendezvous and docking").
 	install("land", list("dd_land", "dd_descent_burn", "dd_suicide_burn"), "landing").
 	install("node", list("dd_node_burn", "dd_rcs_node_burn"), "manoeuvre nodes").
+	install("rendezvous", list("dd_rendezvous"), "rendezvous").
 }
