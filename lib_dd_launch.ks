@@ -108,12 +108,12 @@ when maxQReached or ship:q > 0.2 then {
   mprint("Transitioning to gravity turn.").
   lock lookAt to ship:velocity:surface.
   lock lookUp to heading(compassForVec(ship, ship:velocity:surface), -45):vector.
-  global maxQTime is time:seconds.
-  global maxQPitch is pitchForVec(ship, ship:velocity:surface).
   triggerEvent("launch.gravityTurn").
   when ship:q < 0.02 then {
+    global horizTime is time:seconds.
+    global horizPitch is pitchForVec(ship, ship:facing:vector).
     mprint("Transitioning to horizontal flight.").
-    lock lookAt to heading(compassForVec(ship, ship:velocity:orbit), max(0, maxQPitch - 4 * (time:seconds - maxQTime))):vector.
+    lock lookAt to heading(compassForVec(ship, ship:velocity:orbit), max(0, horizPitch * (1 - (time:seconds - horizTime) / 4))):vector.
     triggerEvent("launch.horizontalFlight").
   }
 }
