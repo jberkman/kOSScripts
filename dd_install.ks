@@ -33,10 +33,10 @@ if features = "reset" {
 	set core:bootFileName to "".
 } else {
 	install(true, list("lib_dd", "dd.cfg", shipName + ".cfg", shipName + "-" + body:name + ".cfg"), "common files").
-	install("launch", list("dd_launch", "lib_dd_launch"), "launch").
+	install("launch", list("dd_launch.ks", "lib_dd_launch.ks"), "launch").
 	install("vacLaunch", list("lib_dd_launch"), "vacuum launch").
 	install("dock", list("dd_rendezvous", "dd_dock"), "rendezvous and docking").
 	install("land", list("dd_land", "dd_descent_burn", "dd_suicide_burn"), "landing").
-	install("node", list("dd_node_burn", "dd_rcs_node_burn"), "manoeuvre nodes").
+	install("node", list("dd_node_burn.ks"), "manoeuvre nodes").
 	install("rendezvous", list("dd_rendezvous"), "rendezvous").
 }
