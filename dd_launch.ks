@@ -42,7 +42,7 @@ if ddCfg:hasKey("launch.altitude") {
   set launchAltitude to ddCfg["launch.altitude"] * 1000.  
 }
 
-local pitchRate is 0.7.
+local pitchRate is 0.6.
 if ddCfg:hasKey("launch.pitchRate") {
   set pitchRate to ddCfg["launch.pitchRate"].
 }
@@ -99,47 +99,6 @@ if body:atm:exists {
 
 lock throttle to 0.
 logLaunchEvent(list(obt:inclination)).
-
-// Circularize etc.
-function orbitalVelocity {
-  parameter orbitable.
-  parameter altitude.
-  parameter a is orbitable:obt:semiMajorAxis.
-  local r is altitude + orbitable:body:radius.
-  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
-}
-
-if rendezvous {
-  run dd_rendezvous.
-} else {
-  local goalSemiMajorAxis is body:radius + apoapsis.
-  local initialVelocity is orbitalVelocity(ship, apoapsis).
-  local goalVelocity is orbitalVelocity(ship, apoapsis, goalSemiMajorAxis).
-  local deltaV is goalVelocity - initialVelocity.
-
-  local burnTime is deltaVBurnTime(deltaV).
-  lock burnStartTime to time:seconds + eta:apoapsis - burnTime / 2.
-
-  mprint("Circularization burn time: " + round(burnTime) + " dV:" + round(deltaV)).
-  logLaunchEvent(list(deltaV)).
-
-  wait until time:seconds >= burnStartTime - 30.
-  set warp to 0.
-  lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
-  lock burnHeading to compassForVec(ship, ship:prograde:forevector).
-  lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
-
-  wait until time:seconds >= burnStartTime.
-  steerToDir().
-  lock throttle to 1.
-
-  wait until obt:semiMajorAxis >= goalSemiMajorAxis.
-
-  lock throttle to 0.
-  unlock steering.
-  unlock throttle.
-  set ship:control:pilotMainThrottle to 0.
-}
 local deltaV is stageDeltaV().
 logLaunchEvent(list(deltaV)).
 print "Launch complete. Remaining dV: " + deltaV.
