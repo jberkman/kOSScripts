@@ -26,8 +26,8 @@ if features = "reset" {
 	local fileList is false.
 	list files in fileList.
 	for file in fileList {
-		if file <> "dd_install" {
-			delete(file).
+		if file <> "dd_install.ks" {
+			deletePath(file).
 		}
 	}
 	set core:bootFileName to "".
@@ -35,6 +35,7 @@ if features = "reset" {
 	install(true, list("lib_dd", "dd.cfg", shipName + ".cfg", shipName + "-" + body:name + ".cfg"), "common files").
 	install("launch", list("dd_launch.ks", "lib_dd_launch.ks"), "launch").
 	install("vacLaunch", list("lib_dd_launch"), "vacuum launch").
+	install("circularize", list("dd_circularize.ks"), "circularize").
 	install("dock", list("dd_rendezvous", "dd_dock"), "rendezvous and docking").
 	install("land", list("dd_land", "dd_descent_burn", "dd_suicide_burn"), "landing").
 	install("node", list("dd_node_burn.ks"), "manoeuvre nodes").
