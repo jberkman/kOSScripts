@@ -4,6 +4,11 @@
 
 @lazyglobal off.
 
+set terminal:charwidth to 24.
+set terminal:charheight to 24.
+set terminal:width to 80.
+set terminal:height to 24.
+
 print "DunaDirect Install! v1.0".
 parameter features is "$UNDEFINED$".
 
