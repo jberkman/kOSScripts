@@ -4,6 +4,8 @@
 
 @lazyglobal off.
 
+run lib_dd.
+
 clearScreen.
 clearVecDraws().
 
@@ -24,18 +26,40 @@ print " to go:". // 12
 local printRow is 0.
 local printCol is 8.
 
+local drawVecs is false.
 local o is v(0, 0, 0).
-local vecGrav is vecDrawArgs(o, o, yellow, "Gravity", 1, true).
-local vecDrag is vecDrawArgs(o, o, red,    "Drag",    1, true).
-local vecThrust is vecDrawArgs(o, o, cyan, "Thrust",  1, true).
-local vecAccel is vecDrawArgs(o, o, green, "Accel",   1, true).
+local vecGrav is vecDrawArgs(o, o, yellow, "Gravity", 1, drawVecs).
+local vecDrag is vecDrawArgs(o, o, red,    "Drag",    1, drawVecs).
+local vecThrust is vecDrawArgs(o, o, cyan, "Thrust",  1, drawVecs).
+local vecAccel is vecDrawArgs(o, o, green, "Accel",   1, drawVecs).
+
+function upPitch {
+  parameter burnHeading.
+  if burnHeading < 180 {
+    return -45.
+  }
+  return 45.
+}
+
+function steeringDir {
+  local burnHeading is compassForVec(ship, ship:srfRetrograde:vector).
+  local burnPitch is 90 - 2 * vang(up:vector, ship:srfRetrograde:vector).
+  local burnUp is heading(90, upPitch(burnHeading)).
+  return lookDirUp(heading(burnHeading, burnPitch):vector, burnUp:vector).  
+}
+
+lock steering to steeringDir().
 
 local lock landed to status = "LANDED" or status = "SPLASHED".
 local togo is alt:radar.
 
-until togo < 0 {
-  //local grav is ship:body:mu / ((ship:altitude / 2 + ship:body:radius) ^ 2).
-  local grav is ship:body:mu / (ship:body:radius ^ 2).
+local gModifier is 1.
+local tBuffer is 1.
+local vFinal is 0.
+local hOffset is 0.
+
+until togo < -ship:verticalSpeed / 100 {
+  local grav is ship:body:mu / ((gModifier * ship:altitude + ship:body:radius) ^ 2).
   local a is ship:sensors:acc.
   local a_up is vdot(up:vector, a).
   local drag is grav + a_up.
@@ -45,9 +69,9 @@ until togo < 0 {
   //local accel_vec is thrust * ship:facing:vector - grav * up:vector.
   local accel is accel_vec:mag.
 
-  local burnT is airspeed / accel + 2.
+  local burnT is airspeed / accel + tBuffer.
 
-  local height is 4 * burnT + accel * (burnT ^ 2) / 2.
+  local height is vFinal * burnT + accel * (burnT ^ 2) / 2 - hOffset.
   set togo to alt:radar - height.
 
   print round(grav, 3)   + " m/s^2      " at (printCol, printRow + 1).
@@ -68,21 +92,25 @@ until togo < 0 {
   set vecThrust:vec to thrust * ship:facing:vector.
   set vecAccel:vec to accel_vec.
 
-  wait 0.01.
+  wait 0.001.
+  set togo to alt:radar - height.
 }
+
+print "vspeed: " + -ship:verticalSpeed / 100.
 
 local burnStart is time:seconds.
 local altStart is alt:radar.
 
 lock throttle to 1.
 
-wait until verticalSpeed > -2.
+wait until verticalSpeed > -vFinal.
 
 local burnEnd is time:seconds.
 local altEnd is alt:radar.
 
 print "burn time: " + round(burnEnd - burnStart, 3) + " s".
 print "burn dist: " + round(altEnd - altStart, 3) + " m".
+print "   height: " + round(alt:radar, 3) + " m".
 
 local burnPID to pidLoop(0.02, 0.05, 0.05, 0, 1).
 set burnPID:setPoint to -4.
