@@ -33,19 +33,29 @@ local vecDrag is vecDrawArgs(o, o, red,    "Drag",    1, drawVecs).
 local vecThrust is vecDrawArgs(o, o, cyan, "Thrust",  1, drawVecs).
 local vecAccel is vecDrawArgs(o, o, green, "Accel",   1, drawVecs).
 
-function upPitch {
-  parameter burnHeading.
-  if burnHeading < 180 {
-    return -45.
-  }
-  return 45.
-}
-
 function steeringDir {
   local burnHeading is compassForVec(ship, ship:srfRetrograde:vector).
   local burnPitch is 90 - 2 * vang(up:vector, ship:srfRetrograde:vector).
-  local burnUp is heading(90, upPitch(burnHeading)).
-  return lookDirUp(heading(burnHeading, burnPitch):vector, burnUp:vector).  
+  local upHeading is 0.
+  local upPitch is 0.
+
+  if burnPitch > 0 {
+    set upHeading to 90.
+    if burnHeading < 180 {
+      set upPitch to burnPitch - 90.
+    } else {
+      set upPitch to 90 - burnPitch.
+    }
+  } else {
+    set upHeading to 270.
+    if burnHeading < 180 {
+      set upPitch to -90 - burnPitch.
+    } else {
+      set upPitch to 90 + burnPitch.
+    }
+  }
+
+  return lookDirUp(heading(burnHeading, burnPitch):vector, heading(upHeading, upPitch):vector).  
 }
 
 lock steering to steeringDir().
@@ -113,11 +123,11 @@ print "burn dist: " + round(altEnd - altStart, 3) + " m".
 print "   height: " + round(alt:radar, 3) + " m".
 
 local burnPID to pidLoop(0.02, 0.05, 0.05, 0, 1).
-set burnPID:setPoint to -4.
-
 lock throttle to burnPID:update(time:seconds, verticalSpeed).
-wait until status = "LANDED" or status = "SPLASHED".
-
+until status = "LANDED" or status = "SPLASHED" {
+  set burnPID:setPoint to -min(alt:radar, 4).
+  wait 0.001.
+}
 lock throttle to 0.
 
 unlock steering.
