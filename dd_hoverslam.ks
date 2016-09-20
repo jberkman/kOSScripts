@@ -55,7 +55,7 @@ lock steering to steeringDir().
 
 local gModifier is 1.
 local tBuffer is 1.
-local hOffset is 7.5.
+local hOffset is 14.5.
 local timestep is 0.001.
 
 local burnStart is false.

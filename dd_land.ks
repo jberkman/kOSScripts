@@ -5,4 +5,4 @@
 @lazyglobal off.
 
 run dd_descent_burn.
-run dd_suicide_burn.
+run dd_hoverslam.
