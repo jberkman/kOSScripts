@@ -5,8 +5,6 @@
 
 @lazyglobal off.
 
-global ddCfg is lexicon().
-
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -45,6 +43,21 @@ function east_for {
   return vcrs(ves:up:vector, ves:north:vector).
 }
 
+function getLine {
+  local path is ".getLine.txt".
+  deletePath(path).
+  edit path.
+  until exists(path) {
+    wait 0.25.
+  }
+  local line is open(path):readAll.
+  deletePath(path).
+  if line:empty {
+    return false.
+  }
+  return line:string.
+}
+
 local loggedEvent is false.
 function logLaunchEvent {
   parameter events.
@@ -64,6 +77,26 @@ function logLaunchEvent {
   fp:write(events:join(",")).
 }
 
+function menu {
+  parameter prompt.
+  parameter menuItems.
+  print " ".
+  print prompt.
+  from { local i is 0. } until i = menuItems:length step { set i to i + 1. } do {
+    print " " + (i + 1) + ". " + menuItems:keys[i].
+  }
+  local line is getLine().
+  if line = false {
+    return false.
+  }
+  local choice is parseScalar(line) - 1.
+  if choice < 0 or choice >= menuItems:length {
+    return false.
+  }
+  menuItems:values[choice]().
+  return choice.
+}
+
 local tMET is time:seconds.
 
 function mprint {
@@ -75,6 +108,40 @@ function mprint {
     set t to "-" + t.
   }
   print "[T" + t + " " + round(ship:altitude / 1000, 1) + "km] " + args.
+}
+
+function parseScalar {
+  parameter s.
+  local value is 0.
+  local negative is false.
+  local decimal is false.
+  local decimalDigits is 0.
+
+  local parser is lex(
+    "-", { set negative to true. parser:remove("-"). },
+    ".", { set decimal to true.  parser:remove("."). },
+    "0", { set value to value * 10. },
+    "1", { set value to value * 10 + 1. },
+    "2", { set value to value * 10 + 2. },
+    "3", { set value to value * 10 + 3. },
+    "4", { set value to value * 10 + 4. },
+    "5", { set value to value * 10 + 5. },
+    "6", { set value to value * 10 + 6. },
+    "7", { set value to value * 10 + 7. },
+    "8", { set value to value * 10 + 8. },
+    "9", { set value to value * 10 + 9. }
+  ).
+
+  from { local i is 0. } until i = s:length step { set i to i + 1. } do {
+    if not parser:hasKey(s[i]) {
+      return value.
+    }
+    if decimalDigits > 0 {
+      set decimalDigits to decimalDigits + 1.
+    }
+    parser[s[i]]().
+  }
+  return value.
 }
 
 function pitchForVec {
@@ -119,17 +186,4 @@ function steerToDir {
 
 function steerToVec {
   wait until vAng(steering, ship:facing:vector) < 5.
-}
-
-function unionLex {
-  parameter lhs, rhs.
-  for key in rhs:keys {
-    set lhs[key] to rhs[key].
-  }
-}
-
-for file in list("dd.cfg", shipName + ".cfg", shipName + "-" + body:name + ".cfg") {
-  if exists(file) {
-    unionLex(ddCfg, readJSON(file)).
-  }
 }
