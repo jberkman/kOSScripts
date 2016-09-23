@@ -141,7 +141,7 @@ function parseScalar {
     }
     parser[s[i]]().
   }
-  return value.
+  return value * (10 ^ -decimalDigits).
 }
 
 function pitchForVec {
