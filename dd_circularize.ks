@@ -4,51 +4,54 @@
 
 @lazyglobal off.
 
-run once lib_dd.
+runOncePath("lib_dd").
 
 clearscreen.
-print "DunaDirect Circularize! v0.1".
+print "DunaDirect Circularize! v0.2".
 
-// Circularize etc.
-function orbitalVelocity {
-  parameter orbitable.
-  parameter altitude.
-  parameter a is orbitable:obt:semiMajorAxis.
-  local r is altitude + orbitable:body:radius.
-  return sqrt(orbitable:body:mu * ((2 / r) - (1 / a))).  
+local goalAltitude is body:radius.
+local burnEta is 0.
+if eta:apoapsis < eta:periapsis {
+	// Raise peri to apo
+	set goalAltitude to goalAltitude + ship:obt:apoapsis.
+	lock burnTime to time:seconds + eta:apoapsis.
+} else {
+	// drop apo to peri
+	set goalAltitude to goalAltitude + ship:obt:periapsis.
+	lock burnTime to time:seconds + eta:periapsis.
 }
+print "goal alt: " + goalAltitude.
+print "time: " + burnTime.
+local goalVelocity is sqrt(ship:body:mu / goalAltitude).
+print "goalVelocity: " + goalVelocity.
+local deltaV is goalVelocity - velocityAt(ship, burnTime):orbit:mag.
+print "deltaV: " + deltaV.
 
-parameter stageParam is false.
-wait until altitude > body:atm:height.
-set warp to 0.
-wait until warp = 0.
-if stageParam = true {
-  stage.
-  wait 1.
-}
+local burnDuration is deltaVBurnTime(abs(deltaV)).
+lock burnStartTime to burnTime - burnDuration / 2.
 
-local goalSemiMajorAxis is body:radius + apoapsis.
-local initialVelocity is orbitalVelocity(ship, apoapsis).
-local goalVelocity is orbitalVelocity(ship, apoapsis, goalSemiMajorAxis).
-local deltaV is goalVelocity - initialVelocity.
-
-local burnTime is deltaVBurnTime(deltaV).
-lock burnStartTime to time:seconds + eta:apoapsis - burnTime / 2.
-
-mprint("Circularization burn time: " + round(burnTime) + " dV:" + round(deltaV)).
+mprint("Circularization burn time: " + round(burnDuration) + " dV:" + round(deltaV)).
 logLaunchEvent(list(deltaV)).
 
-wait until time:seconds >= burnStartTime - 30.
+wait until time:seconds >= burnStartTime - 60.
 set warp to 0.
-lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
-lock burnHeading to compassForVec(ship, ship:prograde:forevector).
+local lock burnVector to ship:prograde:foreVector.
+if deltaV < 0 {
+	lock burnVector to ship:retrograde:foreVector.
+}
+lock burnPitch to -pitchForVec(ship, burnVector).
+lock burnHeading to compassForVec(ship, burnVector).
 lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
 
 wait until time:seconds >= burnStartTime.
 steerToDir().
 lock throttle to 1.
 
-wait until obt:semiMajorAxis >= goalSemiMajorAxis.
+if deltaV > 0 {
+	wait until ship:obt:semiMajorAxis >= goalAltitude.
+} else {
+	wait until ship:obt:semiMajorAxis <= goalAltitude.
+}
 
 lock throttle to 0.
 unlock steering.
