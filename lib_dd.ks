@@ -58,6 +58,26 @@ function getLine {
   return line:string.
 }
 
+function getScalar {
+  parameter setFunc.
+  local line is getLine().
+  if line = false {
+    return.
+  }
+  local scalar is parseScalar(line).
+  if scalar = false {
+    return.
+  }
+  setFunc(scalar).
+}
+
+function install {
+  parameter script.
+  if core:currentVolume <> archive and not exists(script) {
+    copyPath("0:/" + script, "").
+  }
+}
+
 local loggedEvent is false.
 function logLaunchEvent {
   parameter events.
@@ -78,10 +98,7 @@ function logLaunchEvent {
 }
 
 function menu {
-  parameter prompt.
   parameter menuItems.
-  print " ".
-  print prompt.
   from { local i is 0. } until i = menuItems:length step { set i to i + 1. } do {
     print " " + (i + 1) + ". " + menuItems:keys[i].
   }
@@ -93,8 +110,7 @@ function menu {
   if choice < 0 or choice >= menuItems:length {
     return false.
   }
-  menuItems:values[choice]().
-  return choice.
+  return menuItems:values[choice]().
 }
 
 local tMET is time:seconds.
@@ -141,13 +157,19 @@ function parseScalar {
     }
     parser[s[i]]().
   }
-  return value * (10 ^ -decimalDigits).
+  return value / (10 ^ decimalDigits).
 }
 
 function pitchForVec {
   parameter ves.
   parameter vec.
   return 90 - vang(ves:up:vector, vec).
+}
+
+function runSubcommand {
+  parameter subcommand.
+  install(subcommand).
+  runPath(subcommand).
 }
 
 function setMET {

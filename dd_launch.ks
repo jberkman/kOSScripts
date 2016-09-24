@@ -8,67 +8,58 @@ runOncePath("lib_dd").
 
 // Parse options 
 local launchAzimuth is 90.
+local circularize is true.
 local rendezvous is false.
 local launchAltitude is body:atm:height + 10000.
-if rendezvous {
-	set launchAltitude to target:orbit:semiMajorAxis - body:radius.
-}
 local pitchRate is 0.6.
-
-clearscreen.
-print "DunaDirect Launch! v2.9".
-
-function getNumber {
-  parameter setFunc.
-  local line is getLine().
-  if line = false {
-    return.
-  }
-  local scalar is parseScalar(line).
-  if scalar = false {
-    return.
-  }
-  setFunc(scalar).
-}
-
-function setAltitude {
-  print "Enter altitude in km:".
-  getNumber({
-    parameter value.
-    set launchAltitude to value * 1000.
-  }).
-}
-
-function setAzimuth {
-  print "Enter inclination in degrees:".
-  getNumber({
-    parameter value.
-    set launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)).
-  }).
-}
-
-function setPitchRate {
-  print "Enter pitch rate in degrees / s:".
-  getNumber({
-    parameter value.
-    set pitchRate to value.
-  }).
-}
 
 local scrub is false.
 local launch is false.
 until scrub or launch {
-  menu("Ready to Launch", lex(
-    "Altitude: " + round(launchAltitude / 1000, 3) + " km", { setAltitude(). },
-    "Azimuth: " + round(launchAzimuth, 3) + " deg", { setAzimuth(). },
-    "Pitch Rate: " + round(pitchRate, 3) + " deg/s", { setPitchRate(). },
-    "Rendezvous: " + rendezvous, { set rendezvous to not rendezvous. },
+  clearscreen.
+  print "DunaDirect Launch! v2.9".
+  print " ".
+  menu(lex(
+    "Altitude: " + round(launchAltitude / 1000, 3) + " km", {
+      print "Enter altitude in km:".
+      getScalar({
+        parameter value.
+        set launchAltitude to value * 1000.
+      }).
+    },
+    "Azimuth: " + round(launchAzimuth, 3) + " deg", {
+      print "Enter inclination in degrees:".
+      getScalar({
+        parameter value.
+        set launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)).
+      }).
+    },
+    "Pitch Rate: " + round(pitchRate, 3) + " deg/s", {
+      print "Enter pitch rate in degrees / s:".
+      getScalar({
+        parameter value.
+        set pitchRate to value.
+      }).
+    },
+    "Circularize: " + circularize, {
+      set circularize to not circularize.
+      set rendezvous to false.
+    },
+    "Rendezvous: " + rendezvous, {
+      set rendezvous to not rendezvous.
+      set circularize to false.
+    },
     "Proceed with final countdown", { set launch to true. },
     "Scrub", { set scrub to true. }
   )).
 }
 
 if launch {
+  if circularize {
+    install("dd_circularize").
+  } else if rendezvous {
+    install("dd_rendezvous").
+  }
   logLaunchEvent(list(launchAzimuth, pitchRate)).
 
   // Initialize and begin countdown.
@@ -77,7 +68,8 @@ if launch {
   setMET(time:seconds).
 
   if body:atm:exists {
-    run lib_dd_launch(launchAltitude, launchAzimuth, pitchRate).
+    install("lib_dd_launch").
+    runPath("lib_dd_launch", launchAltitude, launchAzimuth, pitchRate).
   } else {
     // Wait to clear tower.
     local rollAlt is alt:radar + 60.
@@ -104,5 +96,11 @@ if launch {
   logLaunchEvent(list(obt:inclination)).
   local deltaV is stageDeltaV().
   logLaunchEvent(list(deltaV)).
+
+  if circularize {
+    runPath("dd_circularize").
+  } else if rendezvous {
+    runPath("dd_rendezvous").
+  }
   print "Launch complete. Remaining dV: " + deltaV.
 }
