@@ -20,12 +20,8 @@ if ship:obt:eccentricity < 1 and eta:apoapsis < eta:periapsis {
 	set goalAltitude to goalAltitude + ship:obt:periapsis.
 	lock burnTime to time:seconds + eta:periapsis.
 }
-print "goal alt: " + goalAltitude.
-print "time: " + burnTime.
 local goalVelocity is sqrt(ship:body:mu / goalAltitude).
-print "goalVelocity: " + goalVelocity.
 local deltaV is goalVelocity - velocityAt(ship, burnTime):orbit:mag.
-print "deltaV: " + deltaV.
 
 local burnDuration is deltaVBurnTime(abs(deltaV)).
 lock burnStartTime to burnTime - burnDuration / 2.
