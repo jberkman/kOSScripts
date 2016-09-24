@@ -11,7 +11,7 @@ print "DunaDirect Circularize! v0.2".
 
 local goalAltitude is body:radius.
 local burnEta is 0.
-if eta:apoapsis < eta:periapsis {
+if ship:obt:eccentricity < 1 and eta:apoapsis < eta:periapsis {
 	// Raise peri to apo
 	set goalAltitude to goalAltitude + ship:obt:apoapsis.
 	lock burnTime to time:seconds + eta:apoapsis.
@@ -50,7 +50,7 @@ lock throttle to 1.
 if deltaV > 0 {
 	wait until ship:obt:semiMajorAxis >= goalAltitude.
 } else {
-	wait until ship:obt:semiMajorAxis <= goalAltitude.
+	wait until ship:obt:eccentricity < 1 and ship:obt:semiMajorAxis <= goalAltitude.
 }
 
 lock throttle to 0.
