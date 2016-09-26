@@ -1,0 +1,3 @@
+[submodule "KSLib"]
+	path = KSLib
+	url = https://github.com/KSP-KOS/KSLib.git
