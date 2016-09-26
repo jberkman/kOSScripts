@@ -4,8 +4,8 @@
 
 @lazyglobal off.
 
-set terminal:charwidth to 24.
-set terminal:charheight to 24.
+set terminal:charwidth to 18.
+set terminal:charheight to 18.
 set terminal:width to 80.
 set terminal:height to 24.
 

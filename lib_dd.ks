@@ -126,6 +126,14 @@ function mprint {
   print "[T" + t + " " + round(ship:altitude / 1000, 1) + "km] " + args.
 }
 
+function orbitalVelocity {
+  parameter orbitable.
+  parameter altitude.
+  parameter a is orbitable:obt:semiMajorAxis.
+  local r is altitude + orbitable:body:radius.
+  return sqrt(orbitable:body:mu * (2 / r - 1 / a)).  
+}
+
 function parseScalar {
   parameter s.
   local value is 0.
@@ -170,6 +178,47 @@ function runSubcommand {
   parameter subcommand.
   install(subcommand).
   runPath(subcommand).
+}
+
+function semiMajorAxisBurn {
+  parameter goalAltitude, burnAltitude, getETA.
+  local lock burnTime to time:seconds + getETA().
+
+  local deltaV is orbitalVelocity(ship, burnAltitude, goalAltitude).
+  set deltaV to deltaV - orbitalVelocity(ship, burnAltitude).
+
+  local burnDuration is deltaVBurnTime(abs(deltaV)).
+  lock burnStartTime to burnTime - burnDuration / 2.
+
+  mprint("Burn time: " + round(burnDuration) + " dV:" + round(deltaV)).
+
+  wait until time:seconds >= burnStartTime - 60.
+  set warp to 0.
+  lock burnVector to ship:prograde:foreVector.
+  if deltaV < 0 {
+    print("burning retro...").
+    lock burnVector to ship:retrograde:foreVector.
+  } else {
+    print("burning pro...").
+  }
+  lock burnPitch to -pitchForVec(ship, burnVector).
+  lock burnHeading to compassForVec(ship, burnVector).
+  lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
+
+  wait until time:seconds >= burnStartTime.
+  steerToDir().
+  lock throttle to 1.
+
+  if deltaV > 0 {
+    wait until ship:obt:semiMajorAxis >= goalAltitude.
+  } else {
+    wait until ship:obt:eccentricity < 1 and ship:obt:semiMajorAxis <= goalAltitude.
+  }
+
+  lock throttle to 0.
+  unlock steering.
+  unlock throttle.
+  set ship:control:pilotMainThrottle to 0.
 }
 
 function setMET {

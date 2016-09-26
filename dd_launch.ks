@@ -98,7 +98,7 @@ if launch {
   logLaunchEvent(list(deltaV)).
 
   if circularize {
-    runPath("dd_circularize").
+    semiMajorAxisBurn(ship:body:radius + ship:obt:apoapsis, ship:obt:apoapsis, { return eta:apoapsis. }).
   } else if rendezvous {
     runPath("dd_rendezvous").
   }
