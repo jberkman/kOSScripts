@@ -18,10 +18,10 @@ global targetPort is target:partsTagged(targetPortTag)[0].
 
 // Distance we need to travel, in ship-facing (*not* port-facing!) coords.
 local lock tgtWaypoint to targetPort:nodePosition - shipPort:nodePosition.
-local lock tgtRelWaypoint to ship:facing:inverse * tgtWaypoint.
+local lock tgtRelWaypoint to facing:inverse * tgtWaypoint.
 
-local lock tgtVel to ship:velocity:orbit - target:velocity:orbit.
-local lock tgtRelVel to ship:facing:inverse * tgtVel.
+local lock tgtVel to velocity:orbit - target:velocity:orbit.
+local lock tgtRelVel to facing:inverse * tgtVel.
 
 local lock dockFacing to angleAxis(180, targetPort:portFacing:topVector) * targetPort:portFacing.
 

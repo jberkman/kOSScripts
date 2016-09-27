@@ -27,8 +27,8 @@ local vecThrust is vecDrawArgs(o, o, cyan, "Thrust",  1, drawVecs).
 local vecAccel is vecDrawArgs(o, o, green, "NonThrust",   1, drawVecs).
 
 function steeringDir {
-  local burnHeading is compassForVec(ship, ship:srfRetrograde:vector).
-  local burnPitch is 90 - 1.5 * vang(up:vector, ship:srfRetrograde:vector).
+  local burnHeading is compassForVec(ship, srfRetrograde:vector).
+  local burnPitch is 90 - 1.5 * vang(up:vector, srfRetrograde:vector).
   local upHeading is 0.
   local upPitch is 0.
 
@@ -65,15 +65,15 @@ lock throttle to throttleValue.
 
 local hOffset is 0.
 for part in ship:parts {
-  set hOffset to min(hOffset, 1 + ship:facing:vector * part:position).
+  set hOffset to min(hOffset, 1 + facing:vector * part:position).
 }
 
 until status = "LANDED" or status = "SPLASHED" {
-  local grav is ship:body:mu / ((gModifier * ship:altitude + ship:body:radius) ^ 2).
-  local thrust is ship:availableThrust / ship:mass.
-  if ship:verticalSpeed > 0 {
+  local grav is body:mu / ((gModifier * altitude + body:radius) ^ 2).
+  local thrust is ship:availableThrust / mass.
+  if verticalSpeed > 0 {
     set throttleValue to 0.
-  } else if ship:verticalSpeed > -2 {
+  } else if verticalSpeed > -2 {
     // continue descending
     if burnStart <> false {
       set throttleValue to grav / thrust.
@@ -85,7 +85,7 @@ until status = "LANDED" or status = "SPLASHED" {
     // d = a/2 * (v^2 / a^2)
     // d = v^2 / 2a
     // a = v^2 / 2d
-    local goal is ship:airspeed ^ 2 / (alt:radar - hOffset) / 2.
+    local goal is airSpeed ^ 2 / (alt:radar - hOffset) / 2.
     local throttleGoal is (goal + grav) / thrust.
 
     print round(grav, 3)   + " m/s^2      " at (printCol, printRow + 1).
@@ -95,7 +95,7 @@ until status = "LANDED" or status = "SPLASHED" {
     print round(throttleGoal * 100, 3) + " %         " at (printCol, printRow + 5).
 
     set vecGrav:vec to -grav * up:vector.
-    set vecThrust:vec to thrust * ship:facing:vector.
+    set vecThrust:vec to thrust * facing:vector.
 
     if burnStart = false and throttleGoal >= 1 {
       set burnStart to time:seconds.

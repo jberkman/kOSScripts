@@ -32,12 +32,12 @@ local burnHeading is 0.
 
 if deltaV > 0 {
   lock burnComplete to apoapsis + periapsis >= goalOrbit.
-  set burnHeading to compassForVec(ship, ship:prograde:forevector).
-  lock burnPitch to -pitchForVec(ship, ship:prograde:forevector).
+  set burnHeading to compassForVec(ship, prograde:forevector).
+  lock burnPitch to -pitchForVec(ship, prograde:forevector).
 } else {
   lock burnComplete to apoapsis + periapsis <= goalOrbit.
-  set burnHeading to compassForVec(ship, ship:retrograde:forevector).
-  lock burnPitch to -pitchForVec(ship, ship:retrograde:forevector).
+  set burnHeading to compassForVec(ship, retrograde:forevector).
+  lock burnPitch to -pitchForVec(ship, retrograde:forevector).
 }
 
 lock burnStartTime to t - deltaVBurnTime(deltaV) / 2.

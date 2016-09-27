@@ -14,7 +14,7 @@ local originalVector to node:deltaV.
 wait until node:eta < 60 + deltaVBurnTime(node:deltaV:mag) / 2.
 
 set warp to 0.
-local topVector is ship:facing:topVector.
+local topVector is facing:topVector.
 lock steering to lookdirup(node:deltaV, topVector).
 wait until node:eta < deltaVBurnTime(node:deltaV:mag) / 2.
 
