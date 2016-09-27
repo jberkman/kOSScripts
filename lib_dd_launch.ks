@@ -47,7 +47,6 @@ print "*" at(1, 3).
 
 // Wait to clear tower.
 local rollAlt is alt:radar + 60.
-logLaunchEvent(list(availableThrust * (body:radius + altitude) ^ 2 / mass / body:mu)).
 wait until alt:radar > rollAlt.
 sas off.
 
@@ -102,7 +101,6 @@ lock throttle to burnPID:update(time:seconds, ship:apoapsis - launchAltitude).
 wait until apoapsis > launchAltitude.
 lock throttle to 0.
 print "*" at(1, 9).
-logLaunchEvent(list(altitude, periapsis)).
 wait until altitude > body:atm:height.
 set warp to 0.
 wait until warp = 0.

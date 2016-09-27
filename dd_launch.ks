@@ -22,24 +22,18 @@ until scrub or launch {
   menu(lex(
     "Altitude: " + round(launchAltitude / 1000, 3) + " km", {
       print "Enter altitude in km:".
-      getScalar({
-        parameter value.
-        set launchAltitude to value * 1000.
-      }).
+      local value is getScalar().
+      if value <> "NaN" { set launchAltitude to value * 1000. }
     },
     "Azimuth: " + round(launchAzimuth, 3) + " deg", {
       print "Enter inclination in degrees:".
-      getScalar({
-        parameter value.
-        set launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)).
-      }).
+      local value is getScalar().
+      if value <> "NaN" { launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)) }
     },
     "Pitch Rate: " + round(pitchRate, 3) + " deg/s", {
       print "Enter pitch rate in degrees / s:".
-      getScalar({
-        parameter value.
-        set pitchRate to value.
-      }).
+      local value is getScalar().
+      if value <> "NaN" { set pitchRate to value. }
     },
     "Circularize: " + circularize, {
       set circularize to not circularize.
@@ -60,7 +54,6 @@ if launch {
   } else if rendezvous {
     install("dd_rendezvous").
   }
-  logLaunchEvent(list(launchAzimuth, pitchRate)).
 
   // Initialize and begin countdown.
   set ship:control:pilotMainThrottle to 0.
@@ -93,14 +86,9 @@ if launch {
   }
 
   lock throttle to 0.
-  logLaunchEvent(list(obt:inclination)).
-  local deltaV is stageDeltaV().
-  logLaunchEvent(list(deltaV)).
-
   if circularize {
-    semiMajorAxisBurn(ship:body:radius + ship:obt:apoapsis, ship:obt:apoapsis, { return eta:apoapsis. }).
+    semiMajorAxisBurn(apoapsis, apoapsis, { return eta:apoapsis. }).
   } else if rendezvous {
     runPath("dd_rendezvous").
   }
-  print "Launch complete. Remaining dV: " + deltaV.
 }

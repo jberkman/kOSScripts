@@ -5,6 +5,13 @@
 
 @lazyglobal off.
 
+global allBodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
+
+function altitudeForPeriod {
+  parameter body, t.
+  return (body:mu / 4 * (t / constant:pi) ^ 2) ^ (1 / 3) - body:radius.
+}
+
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -32,10 +39,8 @@ function compassForVec {
 
 function deltaVBurnTime {
   parameter dV.
-  if ship:availableThrust = 0 {
-    return 0.
-  }
-  return abs(dV * ship:mass / ship:availableThrust).
+  if ship:availableThrust = 0 { return 0. }
+  return abs(dV * mass / ship:availableThrust).
 }
 
 function east_for {
@@ -47,83 +52,36 @@ function getLine {
   local path is ".getLine.txt".
   deletePath(path).
   edit path.
-  until exists(path) {
-    wait 0.25.
-  }
+  until exists(path) { wait 0.1. }
   local line is open(path):readAll.
   deletePath(path).
-  if line:empty {
-    return false.
-  }
+  if line:empty { return false. }
   return line:string.
 }
 
 function getScalar {
-  parameter setFunc.
   local line is getLine().
-  if line = false {
-    return.
-  }
-  local scalar is parseScalar(line).
-  if scalar = false {
-    return.
-  }
-  setFunc(scalar).
+  if line = false { return "NaN". }
+  return parseScalar(line).
 }
 
 function install {
-  parameter script.
-  if core:currentVolume <> archive and not exists(script) {
-    copyPath("0:/" + script, "").
-  }
-}
-
-local loggedEvent is false.
-function logLaunchEvent {
-  parameter events.
-  local fileName is ship:name + "-" + body:name + "-launch.csv".
-  local fp is false.
-  if archive:exists(fileName) {
-    set fp to archive:open(fileName).
-    if loggedEvent {
-      fp:write(",").
-    } else {
-      fp:writeln("").
-      set loggedEvent to true.
-    }
-  } else {
-    set fp to archive:create(fileName).
-  }
-  fp:write(events:join(",")).
+  parameter source, target is "".
+  if core:currentVolume = archive or exists(source) { return. }
+  if target <> "" and not exists(target) { createDir(target). }
+  copyPath("0:/" + source, target).
 }
 
 function menu {
   parameter menuItems.
-  from { local i is 0. } until i = menuItems:length step { set i to i + 1. } do {
-    print " " + (i + 1) + ". " + menuItems:keys[i].
+  local i is 1.
+  for item in menuItems:keys {
+    print " " + i + ". " + item.
+    set i to i + 1.  
   }
-  local line is getLine().
-  if line = false {
-    return false.
-  }
-  local choice is parseScalar(line) - 1.
-  if choice < 0 or choice >= menuItems:length {
-    return false.
-  }
-  return menuItems:values[choice]().
-}
-
-local tMET is time:seconds.
-
-function mprint {
-  parameter args.
-  local t is round(time:seconds - tMET).
-  if t > 0 {
-    set t to "+" + t.
-  } else if t = 0 {
-    set t to "-" + t.
-  }
-  print "[T" + t + " " + round(ship:altitude / 1000, 1) + "km] " + args.
+  local choice is getScalar().
+  if choice = "NaN" or choice < 1 or choice > menuItems:length { return false. }
+  return menuItems:values[choice - 1]().
 }
 
 function orbitalVelocity {
@@ -134,36 +92,41 @@ function orbitalVelocity {
   return sqrt(orbitable:body:mu * (2 / r - 1 / a)).  
 }
 
+local digits is lex(
+  "0", 0,
+  "1", 1,
+  "2", 2,
+  "3", 3,
+  "4", 4,
+  "5", 5,
+  "6", 6,
+  "7", 7,
+  "8", 8,
+  "9", 9
+).
+
 function parseScalar {
   parameter s.
+  if s:length = 0 { return "NaN". }
+
+  local negative is s[0] = "-".
+  if negative {
+    set s to s:sublist(1, length).
+  }
+
   local value is 0.
-  local negative is false.
   local decimal is false.
   local decimalDigits is 0.
 
-  local parser is lex(
-    "-", { set negative to true. parser:remove("-"). },
-    ".", { set decimal to true.  parser:remove("."). },
-    "0", { set value to value * 10. },
-    "1", { set value to value * 10 + 1. },
-    "2", { set value to value * 10 + 2. },
-    "3", { set value to value * 10 + 3. },
-    "4", { set value to value * 10 + 4. },
-    "5", { set value to value * 10 + 5. },
-    "6", { set value to value * 10 + 6. },
-    "7", { set value to value * 10 + 7. },
-    "8", { set value to value * 10 + 8. },
-    "9", { set value to value * 10 + 9. }
-  ).
-
-  from { local i is 0. } until i = s:length step { set i to i + 1. } do {
-    if not parser:hasKey(s[i]) {
-      return value.
+  for c in s:split(""):sublist(1, s:length) {
+    if digits:hasKey(c) {
+      if decimal { set decimalDigits to decimalDigits + 1. }
+      set value to value * 10 + digits[c].
+    } else if c = "." and not decimal {
+      set decimal to true.
+    } else {
+      break.
     }
-    if decimalDigits > 0 {
-      set decimalDigits to decimalDigits + 1.
-    }
-    parser[s[i]]().
   }
   return value / (10 ^ decimalDigits).
 }
@@ -184,23 +147,17 @@ function semiMajorAxisBurn {
   parameter goalAltitude, burnAltitude, getETA.
   local lock burnTime to time:seconds + getETA().
 
-  local deltaV is orbitalVelocity(ship, burnAltitude, goalAltitude).
+  local goalSMA is body:radius + (goalAltitude + burnAltitude) / 2.
+  local deltaV is orbitalVelocity(ship, burnAltitude, goalSMA).
   set deltaV to deltaV - orbitalVelocity(ship, burnAltitude).
 
   local burnDuration is deltaVBurnTime(abs(deltaV)).
   lock burnStartTime to burnTime - burnDuration / 2.
 
-  mprint("Burn time: " + round(burnDuration) + " dV:" + round(deltaV)).
-
   wait until time:seconds >= burnStartTime - 60.
   set warp to 0.
-  lock burnVector to ship:prograde:foreVector.
-  if deltaV < 0 {
-    print("burning retro...").
-    lock burnVector to ship:retrograde:foreVector.
-  } else {
-    print("burning pro...").
-  }
+  lock burnVector to prograde:foreVector.
+  if deltaV < 0 { lock burnVector to retrograde:foreVector. }
   lock burnPitch to -pitchForVec(ship, burnVector).
   lock burnHeading to compassForVec(ship, burnVector).
   lock steering to lookdirup(heading(burnHeading, burnPitch):vector, heading(burnHeading, -45):vector).
@@ -209,11 +166,8 @@ function semiMajorAxisBurn {
   steerToDir().
   lock throttle to 1.
 
-  if deltaV > 0 {
-    wait until ship:obt:semiMajorAxis >= goalAltitude.
-  } else {
-    wait until ship:obt:eccentricity < 1 and ship:obt:semiMajorAxis <= goalAltitude.
-  }
+  if deltaV > 0 { wait until obt:semiMajorAxis >= goalSMA. }
+  else { wait until obt:eccentricity < 1 and obt:semiMajorAxis <= goalSMA. }
 
   lock throttle to 0.
   unlock steering.
@@ -221,40 +175,10 @@ function semiMajorAxisBurn {
   set ship:control:pilotMainThrottle to 0.
 }
 
-function setMET {
-  parameter newValue.
-  set tMET to newValue.
-}
-
-function stageDeltaV {
-  local ispNum is 0.
-  local ispDenum is 0.
-  local engList is 0.
-  list engines in engList.
-  for eng in engList {
-    if eng:ignition and not eng:flameout {
-      set ispNum to ispNum + eng:availableThrust.
-      set ispDenum to ispDenum + eng:availableThrust / eng:isp.
-    }
-  }
-  if ispDenum = 0 {
-    return 0.
-  }
-  local fuelMass is 0.
-  local resources is stage:resourcesLex.
-  for fuel in list("LiquidFuel", "Oxidizer") {
-    if resources:hasKey(fuel) {
-      local resource is resources[fuel].
-      set fuelMass to fuelMass + resource:amount * resource:density.
-    }
-  }
-  return 9.81 * ispNum * ln(mass / (mass - fuelMass)) / ispDenum.
-}
-
 function steerToDir {
-  wait until vAng(steering:vector, ship:facing:vector) < 5.
+  wait until vAng(steering:vector, facing:vector) < 5.
 }
 
 function steerToVec {
-  wait until vAng(steering, ship:facing:vector) < 5.
+  wait until vAng(steering, facing:vector) < 5.
 }
