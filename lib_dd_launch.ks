@@ -23,7 +23,6 @@ print "   SECO".              // 9
 if status = "prelaunch" {
   print "T -" at (0, 0).
   from { local count is 30. } until count = 0 step {
-    setMET(time:seconds + count).
     set count to count - 1.
     wait 1.
   } do {

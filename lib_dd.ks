@@ -5,7 +5,7 @@
 
 @lazyglobal off.
 
-global allBodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
+local bodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
 
 function altitudeForPeriod {
   parameter body, t.
@@ -48,6 +48,60 @@ function east_for {
   return vcrs(ves:up:vector, ves:north:vector).
 }
 
+function getAltitude {
+  parameter label, otherHeight is -1.
+
+  local parkingAlt is 10000 + body:atm:height.
+  local semiAlt is altitudeForPeriod(body, body:rotationPeriod / 2).
+  local syncAlt is altitudeForPeriod(body, body:rotationPeriod).
+
+  local doneSemi is false.
+  local doneSync is false.
+
+  local ret is false.
+
+  function addSemi {
+    menus:add("Semi-Synchronous: " + round(semiAlt / 1000) + " km", { set ret to semiAlt. }).
+    set doneSemi to true.
+  }
+
+  function addSync {
+    menus:add("Synchronous: " + round(syncAlt / 1000) + " km", { set ret to syncAlt. }).
+    set doneSync to true.
+  }
+
+  local menus is lex().
+  if otherHeight > 0 {
+    menus:add("Circular: " + round(otherHeight / 1000) + " km", { set ret to otherHeight. }).
+  }
+  menus:add("Parking: " + round(parkingAlt / 1000) + " km", { set ret to parkingAlt. }).
+  for sib in bodies {
+    if sib <> Sun and sib:body = body {
+      local sibAlt is sib:obt:semiMajorAxis - sib:body:radius.
+      if not doneSemi and sibAlt > semiAlt { addSemi(). }
+      if not doneSync and sibAlt > syncAlt { addSync(). }
+      menus:add(sib:name + ": " + round(sibAlt / 1000) + " km", { set ret to sibAlt. }).
+    }
+  }
+
+  local SOIAlt is body:SOIRadius - body:radius.
+  if not doneSemi and semiAlt < SOIAlt { addSemi(). }
+  if not doneSync and syncAlt < SOIAlt { addSync(). }
+
+  //menus:add("Resonant", { }).
+  menus:add("Custom", {
+    clearScreen.
+    print "Enter Altitude in km:".
+    print " ".
+    local value is getScalar().
+    if value <> "NaN" { set ret to value * 1000. }
+  }).
+  menus:add("Cancel", { set ret to "NaN". }).
+
+  until ret <> false { menu("Set " + label, menus). }
+  return ret.
+}
+
 function getLine {
   local path is ".getLine.txt".
   deletePath(path).
@@ -66,20 +120,41 @@ function getScalar {
 }
 
 function install {
-  parameter source, target is "".
+  parameter source.
   if core:currentVolume = archive or exists(source) { return. }
-  if target <> "" and not exists(target) { createDir(target). }
+  local target is path(source):parent:segments:join("/").
+  if not exists(target) { createDir(target). }
   copyPath("0:/" + source, target).
 }
 
 function menu {
-  parameter menuItems.
+  parameter title, menuItems.
+  //runLibGUIBox().
+
+  local path is ".getLine.txt".
+  deletePath(path).
+  edit path.
+
+  clearScreen.
+  local maxLine is title:length.
+  print title at(2, 1).
+
   local i is 1.
   for item in menuItems:keys {
-    print " " + i + ". " + item.
+    local line is i + ". " + item.
+    print line at(2, i + 2).
+    set maxLine to max(maxLine, line:length).
     set i to i + 1.  
   }
-  local choice is getScalar().
+
+  //draw_gui_box(0, 0, maxLine + 4, menuItems:length + 4).
+  //draw_gui_box(0, 2, maxLine + 4, 1).
+
+  until exists(path) { wait 0.1. }
+  local choice is open(path):readAll.
+  deletePath(path).
+  if choice:empty { return false. }
+  set choice to parseScalar(choice:string).
   if choice = "NaN" or choice < 1 or choice > menuItems:length { return false. }
   return menuItems:values[choice - 1]().
 }
@@ -92,19 +167,7 @@ function orbitalVelocity {
   return sqrt(orbitable:body:mu * (2 / r - 1 / a)).  
 }
 
-local digits is lex(
-  "0", 0,
-  "1", 1,
-  "2", 2,
-  "3", 3,
-  "4", 4,
-  "5", 5,
-  "6", 6,
-  "7", 7,
-  "8", 8,
-  "9", 9
-).
-
+local digits is lex("0", 0, "1", 1, "2", 2, "3", 3, "4", 4, "5", 5, "6", 6, "7", 7, "8", 8, "9", 9).
 function parseScalar {
   parameter s.
   if s:length = 0 { return "NaN". }
@@ -135,6 +198,14 @@ function pitchForVec {
   parameter ves.
   parameter vec.
   return 90 - vang(ves:up:vector, vec).
+}
+
+function runLibGUIBox {
+  install("KSLib/library/lib_gui_box").
+  install("KSLib/library_ksm/spec_char").
+  cd("KSLib/library_ksm").
+  runOncePath("../library/lib_gui_box").
+  cd().
 }
 
 function runSubcommand {

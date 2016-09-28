@@ -15,20 +15,17 @@ local pitchRate is 0.6.
 
 local scrub is false.
 local launch is false.
+
 until scrub or launch {
-  clearscreen.
-  print "DunaDirect Launch! v2.9".
-  print " ".
-  menu(lex(
+  menu("DunaDirect Launch! v2.9", lex(
     "Altitude: " + round(launchAltitude / 1000, 3) + " km", {
-      print "Enter altitude in km:".
-      local value is getScalar().
-      if value <> "NaN" { set launchAltitude to value * 1000. }
+      local value is getAltitude("Altitude").
+      if value <> "NaN" { set launchAltitude to value. }
     },
     "Azimuth: " + round(launchAzimuth, 3) + " deg", {
       print "Enter inclination in degrees:".
       local value is getScalar().
-      if value <> "NaN" { launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)) }
+      if value <> "NaN" { set launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)). }
     },
     "Pitch Rate: " + round(pitchRate, 3) + " deg/s", {
       print "Enter pitch rate in degrees / s:".
@@ -43,22 +40,17 @@ until scrub or launch {
       set rendezvous to not rendezvous.
       set circularize to false.
     },
-    "Proceed with final countdown", { set launch to true. },
+    "GO For Launch", { set launch to true. },
     "Scrub", { set scrub to true. }
   )).
 }
 
 if launch {
-  if circularize {
-    install("dd_circularize").
-  } else if rendezvous {
-    install("dd_rendezvous").
-  }
+  if rendezvous { install("dd_rendezvous"). }
 
   // Initialize and begin countdown.
   set ship:control:pilotMainThrottle to 0.
   sas on.
-  setMET(time:seconds).
 
   if body:atm:exists {
     install("lib_dd_launch").

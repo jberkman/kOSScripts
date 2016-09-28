@@ -29,10 +29,7 @@ function uninstallPrograms {
 }
 
 until false {
-	clearScreen.
-	print "DunaDirect Shell! v0.1".
-	print " ".
-	menu(lex(
+	menu("DunaDirect Shell! v0.1", lex(
 		"Launch",  { runSubcommand("dd_launch"). },
 		"Orbit and Navigation", { runSubcommand("dd_navigate"). },
 		"Rendezvous and Docking", { runSubcommand("dd_rendezvous"). },
