@@ -22,7 +22,7 @@ print "   SECO".              // 9
 
 if status = "prelaunch" {
   print "T -" at (0, 0).
-  from { local count is 30. } until count = 0 step {
+  from { local count is 10. } until count = 0 step {
     set count to count - 1.
     wait 1.
   } do {
@@ -74,14 +74,7 @@ when ship:q < maxQ() then {
   set maxQReached to true.
 }
 
-when ship:availableThrust = 0 then {
-  print "*" at(1, 7).
-  when ship:availableThrust > 0 then {
-    when ship:availableThrust = 0 then {
-      print "*" at(1, 9).
-    }
-  }
-}
+when ship:availableThrust = 0 then { print "*" at(1, 7). }
 
 when maxQReached or ship:q > 0.2 then {
   print "*" at(1, 5).
@@ -94,12 +87,3 @@ when maxQReached or ship:q > 0.2 then {
     lock lookAt to heading(compassForVec(ship, ship:velocity:orbit), max(0, horizPitch * (1 - (time:seconds - horizTime) / 4))):vector.
   }
 }
-
-local burnPID to pidLoop(0.1, 0, 0, 0, 1).
-lock throttle to burnPID:update(time:seconds, ship:apoapsis - launchAltitude).
-wait until apoapsis > launchAltitude.
-lock throttle to 0.
-print "*" at(1, 9).
-wait until altitude > body:atm:height.
-set warp to 0.
-wait until warp = 0.

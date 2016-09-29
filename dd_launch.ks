@@ -74,10 +74,20 @@ if launch {
     local lock lookAt to heading(launchAzimuth, launchPitch()).
     local lock lookUp to heading(launchAzimuth, -45).
     lock steering to lookDirUp(lookAt:vector, lookUp:vector).
-    wait until apoapsis > launchAltitude.
   }
 
+  local SMAOffset is launchAltitude / 2 + body:radius.
+  wait until apoapsis > 70000.
+  local lock deltaV to orbitalVelocity(ship, altitude, SMAOffset + periapsis / 2) - velocity:orbit:mag.
+  local lock thrust to ship:availableThrust / mass.
+
+  wait until deltaV <= thrust / 2.
+  lock throttle to 0.2.
+  wait until apoapsis >= launchAltitude * 0.99.
   lock throttle to 0.
+
+  if body:atm:exists { print "*" at(1, 9). }
+
   if circularize {
     semiMajorAxisBurn(apoapsis, apoapsis, { return eta:apoapsis. }).
   } else if rendezvous {
