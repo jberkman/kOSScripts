@@ -17,7 +17,7 @@ local scrub is false.
 local launch is false.
 
 until scrub or launch {
-  menu("DunaDirect Launch! v2.9", lex(
+  menu("DunaDirect Launch! v3.0", lex(
     "Altitude: " + round(launchAltitude / 1000, 3) + " km", {
       local value is getAltitude("Altitude").
       if value <> "NaN" { set launchAltitude to value. }

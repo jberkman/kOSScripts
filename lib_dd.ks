@@ -5,7 +5,7 @@
 
 @lazyglobal off.
 
-local bodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
+global bodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
 
 function altitudeForPeriod {
   parameter body, t.
@@ -157,6 +157,14 @@ function menu {
   set choice to parseScalar(choice:string).
   if choice = "NaN" or choice < 1 or choice > menuItems:length { return false. }
   return menuItems:values[choice - 1]().
+}
+
+function norRad {
+    parameter n.
+    local twoPi is 2 * constant():pi.
+    if n < 0 { return mod(n, twoPi) + twoPi. }
+    if n >= twoPi { return mod(n, twoPi). }
+    return n.
 }
 
 function orbitalVelocity {
