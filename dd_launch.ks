@@ -7,7 +7,7 @@
 runOncePath("lib_dd").
 
 // Parse options 
-local launchAzimuth is 90.
+local launchInclination is latitude.
 local circularize is true.
 local rendezvous is false.
 local launchAltitude is body:atm:height + 10000.
@@ -22,10 +22,10 @@ until scrub or launch {
       local value is getAltitude("Altitude").
       if value <> "NaN" { set launchAltitude to value. }
     },
-    "Azimuth: " + round(launchAzimuth, 3) + " deg", {
+    "Inclination: " + round(launchInclination) + " deg", {
       print "Enter inclination in degrees:".
       local value is getScalar().
-      if value <> "NaN" { set launchAzimuth to arcsin(clamp(cos(value) / cos(ship:latitude), -1, 1)). }
+      if value <> "NaN" { set launchInclination to value. }
     },
     "Pitch Rate: " + round(pitchRate, 3) + " deg/s", {
       print "Enter pitch rate in degrees / s:".
@@ -45,6 +45,13 @@ until scrub or launch {
   )).
 }
 
+global maxQValue is 0.
+global maxQReached is false.
+function maxQ {
+  set maxQValue to max(maxQValue, ship:q).
+  return maxQValue.
+}
+
 if launch {
   if rendezvous { install("dd_rendezvous"). }
 
@@ -52,38 +59,74 @@ if launch {
   set ship:control:pilotMainThrottle to 0.
   sas on.
 
-  if body:atm:exists {
-    install("lib_dd_launch").
-    runPath("lib_dd_launch", launchAltitude, launchAzimuth, pitchRate).
-  } else {
-    // Wait to clear tower.
-    local rollAlt is alt:radar + 60.
-    lock throttle to 1.
-    wait until alt:radar > rollAlt.
-    sas off.
-    // Pitch program.
-    local tPitch is time:seconds.
+  clearScreen.
+  print "T -".
+  print " * Startup".           // 1
+  print "   Ignition".          // 2
+  print "   Liftoff".           // 3
+  print "   Roll Program".      // 4
+  print "   Gravity Turn".      // 5
+  print "   Max-Q".             // 6
+  print "   MECO".              // 7
+  print "   Horizontal Flight". // 8
+  print "   SECO".              // 9
 
-    function launchPitch {
-      if apoapsis < altitude + 1000 - alt:radar {
-        return 67.5.
-      }
-      return 22.5.    
+  local count is 10.
+  until count = 0 {
+    print count + " " at(4, 0).
+    print char(7).
+    wait 1.
+    set count to count - 1.
+  }
+  print 0 at(4, 0).
+
+  lock throttle to 1.
+  if status = "prelaunch" { stage. }
+  print "*" at(1, 2).
+ 
+  wait until verticalSpeed > 1.
+  print "*" at(1, 3).
+
+  // Wait to clear tower.
+  local rollAlt is alt:radar + 60.
+  wait until alt:radar > rollAlt.
+  sas off.
+
+  local tPitch is time:seconds.
+  function launchPitch {
+    if body:atm:exists { return 90 - pitchRate * (time:seconds - tPitch). }
+    if apoapsis < altitude + 1000 - alt:radar { return 67.5. }
+    return 22.5.    
+  }
+  local launchAzimuth is arcsin(clamp(cos(launchInclination) / cos(latitude), -1, 1)).
+  lock lookAt to heading(launchAzimuth, launchPitch()):vector.
+  lock lookUp to heading(launchAzimuth, -45):vector.
+  lock steering to lookDirUp(lookAt, lookUp).
+  print "*" at(1, 4).
+
+  if body:atm:exists {
+    when ship:q < maxQ() then {
+      print "*" at(1, 6).
+      set maxQReached to true.
     }
 
-    local lock lookAt to heading(launchAzimuth, launchPitch()).
-    local lock lookUp to heading(launchAzimuth, -45).
-    lock steering to lookDirUp(lookAt:vector, lookUp:vector).
+    when ship:availableThrust = 0 then { print "*" at(1, 7). }
+
+    when maxQReached or ship:q > 0.2 then {
+      print "*" at(1, 5).
+      lock lookAt to ship:velocity:surface.
+      lock lookUp to -up:vector.
+      when ship:q < 0.02 then {
+        print "*" at(1, 8).
+        lock lookAt to heading(compassForVec(ship, ship:velocity:orbit), 0):vector.
+      }
+    }
   }
 
   local SMAOffset is launchAltitude / 2 + body:radius.
-  wait until apoapsis > 70000.
-  local lock deltaV to orbitalVelocity(ship, altitude, SMAOffset + periapsis / 2) - velocity:orbit:mag.
-  local lock thrust to ship:availableThrust / mass.
-
-  wait until deltaV <= thrust / 2.
+  wait until orbitalVelocity(ship, altitude, SMAOffset + periapsis / 2) - velocity:orbit:mag < ship:availableThrust / mass / 2.
   lock throttle to 0.2.
-  wait until apoapsis >= launchAltitude * 0.99.
+  wait until apoapsis >= launchAltitude * 0.9995.
   lock throttle to 0.
 
   if body:atm:exists { print "*" at(1, 9). }
