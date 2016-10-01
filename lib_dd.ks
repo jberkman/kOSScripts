@@ -161,7 +161,7 @@ function menu {
 
 function norRad {
     parameter n.
-    local twoPi is 2 * constant():pi.
+    local twoPi is 2 * constant:pi.
     if n < 0 { return mod(n, twoPi) + twoPi. }
     if n >= twoPi { return mod(n, twoPi). }
     return n.
