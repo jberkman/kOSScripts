@@ -12,6 +12,11 @@ function altitudeForPeriod {
   return (body:mu / 4 * (t / constant:pi) ^ 2) ^ (1 / 3) - body:radius.
 }
 
+function arccosh {
+  parameter x.
+  return ln(x + sqrt(x ^ 2 - 1)).
+}
+
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -220,6 +225,11 @@ function runSubcommand {
   parameter subcommand.
   install(subcommand).
   runPath(subcommand).
+}
+
+function sinh {
+    parameter x.
+    return ((constant:e ^ x) - (constant:e ^ (-x))) / 2.
 }
 
 function semiMajorAxisBurn {

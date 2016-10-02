@@ -1,6 +1,7 @@
-// lib_dd_orbital_elements - Shared routines.
+// lib_dd_orbit - Kerbal Mechanics.
 // Copyright © 2016 jacob berkman
 // This file is distributed under the terms of the MIT license.
+// Based on Robert A. Braeunig's site http://www.braeunig.us/space/basics.htm
 
 runOncePath("lib_dd").
 
@@ -59,24 +60,24 @@ runOncePath("lib_dd").
     }
 
     function createOrbit {
-        local orbit is lex().
-        lex:add("periapsis", periapsis@:bind(orbit)).
-        lex:add("apoapsis", apoapsis@:bind(orbit)).
-        lex:add("meanMotion", meanMotion@:bind(orbit)).
-        lex:add("eccentricAnomaly", eccentricAnomaly@:bind(orbit)).
-        lex:add("hyperbolicEccentricAnomaly", hyperbolicEccentricAnomaly@:bind(orbit)).
-        lex:add("meanAnomaly", meanAnomaly@:bind(orbit)).
-        lex:add("radius", radius@:bind(orbit)).
-        lex:add("azimuth", azimuth@:bind(orbit)).
-        lex:add("velocityMagnitude", velocityMagnitude@:bind(orbit)).
-        lex:add("velocity", velocity@:bind(orbit)).
-        lex:add("position", position@:bind(orbit)).
-        lex:add("at", at@:bind(orbit)).
-        lex:add("after", after@:bind(orbit)).
-        lex:add("inclined", inclined@:bind(orbit)).
-        lex:add("secondsToMeanAnomaly", secondsToMeanAnomaly@:bind(orbit)).
-        lex:add("trueAnomalyAtRadius", trueAnomalyAtRadius@:bind(orbit)).
-        lex:add("secondsToTrueAnomaly", secondsToTrueAnomaly@:bind(orbit)).
+        local self is lex().
+        self:add("periapsis", periapsis@:bind(self)).
+        self:add("apoapsis", apoapsis@:bind(self)).
+        self:add("meanMotion", meanMotion@:bind(self)).
+        self:add("eccentricAnomaly", eccentricAnomaly@:bind(self)).
+        self:add("hyperbolicEccentricAnomaly", hyperbolicEccentricAnomaly@:bind(self)).
+        self:add("meanAnomaly", meanAnomaly@:bind(self)).
+        self:add("radius", radius@:bind(self)).
+        self:add("azimuth", azimuth@:bind(self)).
+        self:add("velocityMagnitude", velocityMagnitude@:bind(self)).
+        self:add("velocity", velocity@:bind(self)).
+        self:add("position", position@:bind(self)).
+        self:add("at", at@:bind(self)).
+        self:add("after", after@:bind(self)).
+        self:add("inclined", inclined@:bind(self)).
+        self:add("secondsToMeanAnomaly", secondsToMeanAnomaly@:bind(self)).
+        self:add("trueAnomalyAtRadius", trueAnomalyAtRadius@:bind(self)).
+        self:add("secondsToTrueAnomaly", secondsToTrueAnomaly@:bind(self)).
         return orbit.
     }
 
@@ -95,15 +96,15 @@ runOncePath("lib_dd").
 
     function orbitWithTrueAnomaly {
         parameter body, e, a, i, loan, aop, v.
-        local orbit is createOrbit().
-        orbit:add("body", body).
-        orbit:add("eccentricity", e).
-        orbit:add("semiMajorAxis", a).
-        orbit:add("inclination", i).
-        orbit:add("longitudeOfAscendingNode", loan).
-        orbit:add("argumentOfPeriapsis", aop).
-        orbit:add("trueAnomaly", v).
-        return orbit.
+        local self is createOrbit().
+        self:add("body", body).
+        self:add("eccentricity", e).
+        self:add("semiMajorAxis", a).
+        self:add("inclination", i).
+        self:add("longitudeOfAscendingNode", loan).
+        self:add("argumentOfPeriapsis", aop).
+        self:add("trueAnomaly", v).
+        return self.
     }
 
     function orbitWithAltitude {
@@ -189,9 +190,7 @@ runOncePath("lib_dd").
         local v is self["trueAnomaly"].
         local cosv is cos(v).
         local a is self["eccentricity"] + cosv.
-        local x is abs(a / b).
-        // acosh()
-        local F is ln(x + sqrt(x ^ 2 - 1)).
+        local F is arccosh(abs(a / b)).
         if v >= 0 { return F. }
         return -F.
     }
@@ -262,8 +261,13 @@ runOncePath("lib_dd").
             set l_W to l_W + pi.
         }
         local b is arcsin(sin(u) * sin(i)).
-        // FIXME: this is vector in polar coords; translate to cartesian!
-        return Vector(norRad(l), norRad(b), radius(self)).
+        local r is radius(self).
+
+        local x is r * cos(l) * cos(b).
+        local y is r * cos(l) * sin(b).
+        local z is r * sin(l).
+
+        return Vector(x, y, z).
     }
 
     // (4.38)
@@ -284,10 +288,8 @@ runOncePath("lib_dd").
         }
         local F is hyperbolicEccentricAnomaly(orbit).
         local F0 is hyperbolicEccentricAnomaly(self).
-        local sinhF is ((constant:e ^ F) - (constant:e ^ (-F))) / 2.
-        local a is e * sinhF - F.
-        local sinhF0 is ((constant:e ^ F0) - (constant:e ^ (-f0))) / 2.
-        local b is e * sinhF0 - F0.
+        local a is e * sinh(F) - F.
+        local b is e * sinh(F0) - F0.
         local c is sqrt(((-self["semiMajorAxis"]) ^ 3) / self["body"]:mu).
         return (a - b) * c.
     }
