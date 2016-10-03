@@ -133,6 +133,7 @@ if launch {
 
   if circularize {
     semiMajorAxisBurn(apoapsis, apoapsis, { return eta:apoapsis. }).
+    if hasNode { runSubcommand("dd_node_burn"). }
   } else if rendezvous {
     runPath("dd_rendezvous").
   }

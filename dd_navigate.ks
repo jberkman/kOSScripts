@@ -53,19 +53,18 @@ function setSemiMajorAxis {
 
 local exit is false.
 until exit {
- 	menu("DunaDirect Orbit and Navigation! v0.1", lex(
- 		"Body: " + body:name, { transfer(). },
- 		"Apoapsis: " + round(apoapsis / 1000, 3) + " km", {
- 			setSemiMajorAxis("Apoapsis", periapsis, { return eta:periapsis. }).
- 		},
- 		"Periapsis: " + round(periapsis / 1000, 3) + " km", {
- 			setSemiMajorAxis("Periapsis", apoapsis, { return eta:apoapsis. }).
- 		},
- 		// "Inclination: " + round(ship:obt:inclination, 2) + " deg", { setInclination(). },
- 		"Manoeuvre Node", {
- 			install("dd_node_burn").
- 			runPath("dd_node_burn").
- 		},
- 		"Done", { set exit to true. }
- 	)).
+    local menus is lex().
+    if career():canMakeNodes {
+        menus:add("Transfer", transfer@).
+    }
+    menus:add("Apoapsis: " + round(apoapsis / 1000, 3) + " km", {
+        setSemiMajorAxis("Apoapsis", periapsis, { return eta:periapsis. }).
+    }).
+    menus:add("Periapsis: " + round(periapsis / 1000, 3) + " km", {
+        setSemiMajorAxis("Periapsis", apoapsis, { return eta:apoapsis. }).
+    }).
+    //menus:add("Inclination: " + round(ship:obt:inclination, 2) + " deg", setInclination@).
+    if hasNode { menus:add("Perform Manouevre Burn", { runSubcommand("dd_node_burn"). }). }
+    menus:add("Done", { set exit to true. }).
+ 	menu("DunaDirect Orbit and Navigation! v0.1", menus).
 }

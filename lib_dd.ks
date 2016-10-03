@@ -240,6 +240,12 @@ function semiMajorAxisBurn {
   local deltaV is orbitalVelocity(ship, burnAltitude, goalSMA).
   set deltaV to deltaV - orbitalVelocity(ship, burnAltitude).
 
+  if career():canMakeNodes {
+    local burn is node(burnTime, 0, 0, deltaV).
+    add burn.
+    return.
+  }
+
   local burnDuration is deltaVBurnTime(abs(deltaV)).
   lock burnStartTime to burnTime - burnDuration / 2.
 

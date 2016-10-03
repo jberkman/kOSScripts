@@ -31,10 +31,10 @@ function uninstallPrograms {
 until false {
 	menu("DunaDirect Shell! v0.1", lex(
 		"Launch",  { runSubcommand("dd_launch"). },
-		"Orbit and Navigation", { runSubcommand("dd_navigate"). },
+		"Manouevres", { runSubcommand("dd_navigate"). },
 		"Rendezvous and Docking", { runSubcommand("dd_rendezvous"). },
 		"Landing", { runSubcommand("dd_land"). },
-		"Uninstall all programs", { uninstallPrograms(). },
+		"Uninstall all programs", uninstallPrograms@,
 		"Shut Down", { core:deactivate. }
 	)).
 }
