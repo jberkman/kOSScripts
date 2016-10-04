@@ -12,11 +12,6 @@ function altitudeForPeriod {
   return (body:mu / 4 * (t / constant:pi) ^ 2) ^ (1 / 3) - body:radius.
 }
 
-function arccosh {
-  parameter x.
-  return ln(x + sqrt(x ^ 2 - 1)).
-}
-
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -213,6 +208,46 @@ function pitchForVec {
   return 90 - vang(ves:up:vector, vec).
 }
 
+function racos {
+  parameter x.
+  return arccos(x) * constant:degToRad.
+}
+
+function racosh {
+  parameter x.
+  return ln(x + sqrt(x ^ 2 - 1)).
+}
+
+function rasin {
+  parameter x.
+  return arcsin(x) * constant:degToRad.
+}
+
+function ratan {
+  parameter x.
+  return arctan(x) * constant:degToRad.
+}
+
+function rcos {
+  parameter a.
+  return cos(a * constant:radToDeg).
+}
+
+function rsin {
+  parameter a.
+  return sin(a * constant:radToDeg).  
+}
+
+function rsinh {
+    parameter x.
+    return ((constant:e ^ x) - (constant:e ^ (-x))) / 2.
+}
+
+function rtan {
+  parameter a.
+  return tan(a * constant:radToDeg).
+}
+
 function runLibGUIBox {
   install("KSLib/library/lib_gui_box").
   install("KSLib/library_ksm/spec_char").
@@ -225,11 +260,6 @@ function runSubcommand {
   parameter subcommand.
   install(subcommand).
   runPath(subcommand).
-}
-
-function sinh {
-    parameter x.
-    return ((constant:e ^ x) - (constant:e ^ (-x))) / 2.
 }
 
 function semiMajorAxisBurn {
