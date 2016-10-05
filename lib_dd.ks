@@ -159,6 +159,13 @@ function menu {
   return menuItems:values[choice - 1]().
 }
 
+function norDeg {
+  parameter n.
+  if n < 0 { return mod(n, 360) + 360. }
+  if n >= 360 { return mod(n, 360). }
+  return n.
+}
+
 function norRad {
     parameter n.
     local twoPi is 2 * constant:pi.
@@ -208,44 +215,15 @@ function pitchForVec {
   return 90 - vang(ves:up:vector, vec).
 }
 
-function racos {
-  parameter x.
-  return arccos(x) * constant:degToRad.
-}
-
-function racosh {
-  parameter x.
-  return ln(x + sqrt(x ^ 2 - 1)).
-}
-
-function rasin {
-  parameter x.
-  return arcsin(x) * constant:degToRad.
-}
-
-function ratan {
-  parameter x.
-  return arctan(x) * constant:degToRad.
-}
-
-function rcos {
-  parameter a.
-  return cos(a * constant:radToDeg).
-}
-
-function rsin {
-  parameter a.
-  return sin(a * constant:radToDeg).  
-}
-
-function rsinh {
+function arccosh {
     parameter x.
-    return ((constant:e ^ x) - (constant:e ^ (-x))) / 2.
+    return ln(x + sqrt(x ^ 2 - 1)) * constant:radToDeg.
 }
 
-function rtan {
-  parameter a.
-  return tan(a * constant:radToDeg).
+function sinh {
+    parameter x.
+    set x to x * constant:degToRad.
+    return (constant:e ^ x - constant:e ^ (-x)) / 2.
 }
 
 function runLibGUIBox {

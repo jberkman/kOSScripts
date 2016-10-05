@@ -15,29 +15,33 @@ function transferToSibling {
     local aTX is (rA + rB) / 2.
     local tTX is constant:pi * sqrt(aTX ^ 3 / body:mu).
 
-    local lower is 0.
-    local upper is 1 / abs(1 / obt:period - 1 / dest:obt:period).
+    local lower is 300.
+    local upper is 300 + 1 / abs(1 / obt:period - 1 / dest:obt:period).
     local t is 0.
     local epsilon is 0.1 * constant:degToRad.
+    local obtA0 is DDOrbit["withOrbit"](obt).
+    local obtB0 is DDOrbit["withOrbit"](dest:obt).
     local obtA is false.
     local obtB is false.
     local posA is false.
     local posB is false.
+
     until false {
         print "lower: " + lower + " upper: " + upper.
         set t to (lower + upper) / 2.
 
-        set obtA to DDOrbit["at"](obt, t).
+        set obtA to obtA0["after"](obtA0, t).
         set posA to obtA["position"](obtA).
         local xyA is posA:vec.
-        set xyA:z to 0.
+        set xyA:y to 0.
 
-        set obtB to DDOrbit["at"](dest:obt, t + tTX).
+        set obtB to obtB0["after"](obtB0, t + tTX).
         set posB to obtB["position"](obtB).
         local xyB is posB:vec.
-        set xyB:z to 0.
+        set xyB:y to 0.
 
         local curPhase is vang(xyA, xyB).
+        //print "xyA: " + xyA + " xyB: " + xyB.
         print "t: " + round(t) + " phase: " + round(curPhase).
         if curPhase > 180.1 { set upper to t. }
         else if curPhase < 179.9 { set lower to t. }
@@ -45,8 +49,6 @@ function transferToSibling {
         wait 0.001.
     }
 
-    local posA is obtA["position"](obtA).
-    local posB is obtB["position"](obtB).
     print " ".
     print "obtA: " + obtA["trueAnomaly"].
     print "obtB: " + obtB["trueAnomaly"].

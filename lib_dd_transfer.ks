@@ -11,24 +11,24 @@ runOncePath("lib_dd_orbit").
 
         local r1 is origin:mag.
         local r2 is destination:mag.
-        local v is vang(origin, destination) * constant:degToRad.
-        print "r1: " + r1 + " r2: " + r2 + " v: " + v * constant:radToDeg.
+        local v is vang(origin, destination).
+        print "r1: " + r1 + " r2: " + r2 + " v: " + v.
 
         // Evaluate the constants l k, and m from r1, r2 and v using equations
         // (5.9) through (5.11)
         // (5.9)
-        local k is r1 * r2 * (1 - rcos(v)).
+        local k is r1 * r2 * (1 - cos(v)).
         // (5.10)
         local l is r1 + r2.
         // (5.11)
-        local m is r1 * r2 * (1 + rcos(v)).
+        local m is r1 * r2 * (1 + cos(v)).
 
         // Determine the limits on the possible values of p by evaluating pi and
         // pii from equations (5.18) and (5.19).
         // Pick a trial value of p within the appropriate limits.
         local p0 is 0.
         local p1 is 0.
-        if v < constant:pi {
+        if v < 180 {
             // (5.18)
             local pi is k / (l + sqrt(2 * m)).
             set p0 to (r1 + r2) / 2.
@@ -50,10 +50,10 @@ runOncePath("lib_dd_orbit").
 
             // Solve for f and g from equations (5.5), (5.6) and (5.7)
             // (5.5)
-            local f_ is 1 - r2 / p * (1 - rcos(v)).
+            local f_ is 1 - r2 / p * (1 - cos(v)).
             // (5.6)
             print "p: " + p.
-            local g_ is r1 * r2 * rsin(v) / sqrt(body:mu * p).
+            local g_ is r1 * r2 * sin(v) / sqrt(body:mu * p).
 
             local t is 0.
             // Solve for E or F, as appropriate, using equations (5.13) and
@@ -61,14 +61,14 @@ runOncePath("lib_dd_orbit").
             // Solve for t from equation (5.16) or (5.17)
             if a > 0 {
                 // (5.13)
-                local dE is racos(1 - r1 * (1 - f_) / a).
+                local dE is arccos(1 - r1 * (1 - f_) / a).
                 // (5.16)
-                set t to g_ + sqrt(a ^ 3 / body:mu) * (dE - rsin(dE)).
+                set t to g_ + sqrt(a ^ 3 / body:mu) * (dE - sin(dE)).
             } else {
                 // (5.15)
-                local dF is racosh(1 - r1 / a * (1 - f_)).
+                local dF is arccosh(1 - r1 / a * (1 - f_)).
                 // (5.17)
-                set t to g_ + sqrt(-a ^ 3 / body:mu) * (rsinh(dF) - dF).
+                set t to g_ + sqrt(-a ^ 3 / body:mu) * (sinh(dF) - dF).
             }
 
             return lex("p", p, "a", a, "t", t).
@@ -121,10 +121,10 @@ runOncePath("lib_dd_orbit").
         local v is self["trueAnomaly"].
 
         local a is sqrt(self["body"]:mu / p) * tan(v / 2).
-        local b is (1 - rcos(v)) / p - 1 / r1 - 1 / r2.
+        local b is (1 - cos(v)) / p - 1 / r1 - 1 / r2.
 
         local f_ is a * b.
-        local g_ is 1 - r1 * (1 - rcos(v)) / p.
+        local g_ is 1 - r1 * (1 - cos(v)) / p.
 
         return f_ * self["origin"] + g_ * departureVelocity(self).
     }
@@ -132,13 +132,13 @@ runOncePath("lib_dd_orbit").
     // (5.5)
     function f {
         parameter self.
-        return 1 - self["destination"]:mag / self["parameter"] * (1 - rcos(self["trueAnomaly"])).
+        return 1 - self["destination"]:mag / self["parameter"] * (1 - cos(self["trueAnomaly"])).
     }
 
     // (5.6)
     function g {
         parameter self.
-        return self["origin"]:mag * self["destination"]:mag * rsin(self["trueAnomaly"]) / sqrt(self["body"]:mu * self["parameter"]).
+        return self["origin"]:mag * self["destination"]:mag * sin(self["trueAnomaly"]) / sqrt(self["body"]:mu * self["parameter"]).
     }
 
     // (5.7)
