@@ -43,7 +43,7 @@ runOncePath("lib_dd").
 
     function orbitMeanMotion {
         parameter a, mu.
-        return sqrt(mu / a ^ 3).
+        return sqrt(mu / a ^ 3) * constant:radToDeg.
     }
 
     function orbitMeanAnomaly {
@@ -72,6 +72,7 @@ runOncePath("lib_dd").
         self:add("velocityMagnitude", velocityMagnitude@).
         self:add("velocity", velocity@).
         self:add("position", position@).
+        self:add("period", period@).
         self:add("at", at@).
         self:add("after", after@).
         self:add("inclined", inclined@).
@@ -300,6 +301,11 @@ runOncePath("lib_dd").
         local b is e * sinh(F0) - F0.
         local c is sqrt(((-self["semiMajorAxis"]) ^ 3) / self["body"]:mu).
         return (a - b) * c.
+    }
+
+    function period {
+        parameter self.
+        return 2 * constant:pi * sqrt(self["semiMajorAxis"] ^ 3 / self["body"]:mu).
     }
 
 }

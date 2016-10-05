@@ -31,6 +31,7 @@ function transferToSibling {
         set t to (lower + upper) / 2.
 
         set obtA to obtA0["after"](obtA0, t).
+        print "0: " + obtA0["trueAnomaly"] + " t: " + obtA["trueAnomaly"].
         set posA to obtA["position"](obtA).
         local xyA is posA:vec.
         set xyA:y to 0.
@@ -40,9 +41,11 @@ function transferToSibling {
         local xyB is posB:vec.
         set xyB:y to 0.
 
-        local curPhase is vang(xyA, xyB).
+        // local curPhase is vang(xyA, xyB).
+        local curPhase is norDeg(obtA["trueAnomaly"] + obtA["argumentOfPeriapsis"] - obtB["trueAnomaly"] - obtB["argumentOfPeriapsis"]).
+
         //print "xyA: " + xyA + " xyB: " + xyB.
-        print "t: " + round(t) + " phase: " + round(curPhase).
+        print "t: " + round(t) + " phase: " + round(curPhase) + " vAng: " + round(vang(xyA, xyB)).
         if curPhase > 180.1 { set upper to t. }
         else if curPhase < 179.9 { set lower to t. }
         else { break. }

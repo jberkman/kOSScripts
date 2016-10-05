@@ -12,16 +12,19 @@ runOncePath("lib_dd_orbit").
         local r1 is origin:mag.
         local r2 is destination:mag.
         local v is vang(origin, destination).
+        local cosv is cos(v).
+        local sinv is sin(v).
+
         print "r1: " + r1 + " r2: " + r2 + " v: " + v.
 
         // Evaluate the constants l k, and m from r1, r2 and v using equations
         // (5.9) through (5.11)
         // (5.9)
-        local k is r1 * r2 * (1 - cos(v)).
+        local k is r1 * r2 * (1 - cosv).
         // (5.10)
         local l is r1 + r2.
         // (5.11)
-        local m is r1 * r2 * (1 + cos(v)).
+        local m is r1 * r2 * (1 + cosv).
 
         // Determine the limits on the possible values of p by evaluating pi and
         // pii from equations (5.18) and (5.19).
@@ -50,10 +53,10 @@ runOncePath("lib_dd_orbit").
 
             // Solve for f and g from equations (5.5), (5.6) and (5.7)
             // (5.5)
-            local f_ is 1 - r2 / p * (1 - cos(v)).
+            local f_ is 1 - r2 / p * (1 - cosv).
             // (5.6)
             print "p: " + p.
-            local g_ is r1 * r2 * sin(v) / sqrt(body:mu * p).
+            local g_ is r1 * r2 * sinv / sqrt(body:mu * p).
 
             local t is 0.
             // Solve for E or F, as appropriate, using equations (5.13) and
@@ -63,12 +66,12 @@ runOncePath("lib_dd_orbit").
                 // (5.13)
                 local dE is arccos(1 - r1 * (1 - f_) / a).
                 // (5.16)
-                set t to g_ + sqrt(a ^ 3 / body:mu) * (dE - sin(dE)).
+                set t to g_ + sqrt(a ^ 3 / body:mu) * (dE * constant:degToRad - sin(dE)).
             } else {
                 // (5.15)
                 local dF is arccosh(1 - r1 / a * (1 - f_)).
                 // (5.17)
-                set t to g_ + sqrt(-a ^ 3 / body:mu) * (sinh(dF) - dF).
+                set t to g_ + sqrt(-a ^ 3 / body:mu) * (sinh(dF) - dF * constant:degToRad).
             }
 
             return lex("p", p, "a", a, "t", t).
@@ -82,7 +85,8 @@ runOncePath("lib_dd_orbit").
             print "duration: " + duration + " t: " + pat["t"].
             // Adjust the trial value of p using one of the iteration methods
             // discussed above until the desired time-of-flight is obtained.
-            print "pat: " + pat + " pat0: " + pat0.
+            print "pat: " + pat.
+            print "pat0: " + pat0.
             local p is pat["p"] + (duration - pat["t"]) * (pat["p"] - pat0["p"]) / (pat["t"] - pat0["t"]).
             set pat0 to pat.
             set pat to eval(p).
