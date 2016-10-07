@@ -261,7 +261,7 @@ runOncePath("lib_dd").
         local l_W is norDeg(arctan(cos(i) * sin(u) / cos(u))).
         // "If i < 90º, as for the major planets, (l – W) and u must lie in the
         // same quadrant."
-        local l is l_W + self["longitudeOfAscendingNode"] + self["body"]:rotationAngle.
+        local l is l_W + self["longitudeOfAscendingNode"] - self["body"]:rotationAngle.
         //print "l_W: " + l_W + " u: " + u.
         if (l_W > 180) <> (u > 180) {
             //print "beep.".
