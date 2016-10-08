@@ -167,21 +167,21 @@ runOncePath("lib_dd_orbit").
         ).
 
         self:add("addNode", addNode@).
-        self:add("captureVelocity", captureVelocity@).
-        self:add("departureVelocity", departureVelocity@).
-        self:add("orbit", orbit@).
+        self:add("captureVelocity", getCaptureVelocity@).
+        self:add("departureVelocity", getDepartureVelocity@).
+        self:add("orbit", getOrbit@).
 
         return self.
     }
 
     // (5.3)
-    function departureVelocity {
+    function getDepartureVelocity {
         parameter self.
         return (self["destination"] - f(self) * self["origin"]) / g(self).
     }
 
     // (5.4)
-    function captureVelocity {
+    function getCaptureVelocity {
         parameter self.
         local r1 is self["origin"]:mag.
         local r2 is self["destination"]:mag.
@@ -210,7 +210,7 @@ runOncePath("lib_dd_orbit").
     }
 
     // (5.7)
-    function orbit {
+    function getOrbit {
         parameter self.
         return DDOrbit["withVectors"](self["body"], self["origin"], departureVelocity(self)).
     }

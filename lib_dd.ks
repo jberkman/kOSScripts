@@ -12,6 +12,11 @@ function altitudeForPeriod {
   return (body:mu / 4 * (t / constant:pi) ^ 2) ^ (1 / 3) - body:radius.
 }
 
+function arccosh {
+    parameter x.
+    return ln(x + sqrt(x ^ 2 - 1)) * constant:radToDeg.
+}
+
 function clamp {
   parameter x, l, h.
   if x < l { return l. }
@@ -215,15 +220,30 @@ function pitchForVec {
   return 90 - vang(ves:up:vector, vec).
 }
 
-function arccosh {
-    parameter x.
-    return ln(x + sqrt(x ^ 2 - 1)) * constant:radToDeg.
+function rawToUniversal {
+  parameter vec.
+  return R(0, vAng(V(1, 0, 0), solarPrimeVector), 0) * vec.
+}
+
+function shipToSOI {
+  parameter vec, body.
+  return vec - body:position.
+}
+
+function shipRawToSOIUniversal {
+  parameter vec, body.
+  rawToUniversal(shipToSOI(vec, body)).
 }
 
 function sinh {
     parameter x.
     set x to x * constant:degToRad.
     return (constant:e ^ x - constant:e ^ (-x)) / 2.
+}
+
+function soiToShip {
+  parameter vec, body.
+  return vec + body:position.
 }
 
 function runLibGUIBox {
@@ -284,4 +304,14 @@ function steerToDir {
 
 function steerToVec {
   wait until vAng(steering, facing:vector) < 5.
+}
+
+function universalToRaw {
+  parameter vec.
+  return R(0, -vAng(V(1, 0, 0), solarPrimeVector), 0) * vec.
+}
+
+function universalSOIToShipRaw {
+  parameter vec, body.
+  soiToShip(universalToRaw(vec), body).
 }

@@ -61,24 +61,24 @@ runOncePath("lib_dd").
 
     function createOrbit {
         local self is lex().
-        self:add("periapsis", periapsis@).
-        self:add("apoapsis", apoapsis@).
-        self:add("meanMotion", meanMotion@).
-        self:add("eccentricAnomaly", eccentricAnomaly@).
-        self:add("hyperbolicEccentricity", hyperbolicEccentricity@).
-        self:add("meanAnomaly", meanAnomaly@).
-        self:add("radius", radius@).
-        self:add("azimuth", azimuth@).
-        self:add("velocityMagnitude", velocityMagnitude@).
-        self:add("velocity", velocity@).
-        self:add("position", position@).
-        self:add("period", period@).
-        self:add("at", at@).
-        self:add("after", after@).
-        self:add("inclined", inclined@).
-        self:add("secondsToMeanAnomaly", secondsToMeanAnomaly@).
-        //self:add("trueAnomalyAtRadius", trueAnomalyAtRadius@).
-        self:add("secondsToTrueAnomaly", secondsToTrueAnomaly@).
+        self:add("periapsis", getPeriapsis@).
+        self:add("apoapsis", getApoapsis@).
+        self:add("meanMotion", getMeanMotion@).
+        self:add("eccentricAnomaly", getEccentricAnomaly@).
+        self:add("hyperbolicEccentricity", getHyperbolicEccentricity@).
+        self:add("meanAnomaly", getMeanAnomaly@).
+        self:add("radius", getRadius@).
+        self:add("azimuth", getAzimuth@).
+        self:add("velocityMagnitude", getVelocityMagnitude@).
+        self:add("velocity", getVelocity@).
+        self:add("position", getPosition@).
+        self:add("period", getPeriod@).
+        self:add("at", getAt@).
+        self:add("after", getAfter@).
+        self:add("inclined", getInclined@).
+        self:add("secondsToMeanAnomaly", getSecondsToMeanAnomaly@).
+        //self:add("trueAnomalyAtRadius", getTrueAnomalyAtRadius@).
+        self:add("secondsToTrueAnomaly", getSecondsToTrueAnomaly@).
         return self.
     }
 
@@ -134,48 +134,48 @@ runOncePath("lib_dd").
         return orbitWithTrueAnomaly(body, e:mag, a, i, loan, aop, v).
     }
 
-    function at {
+    function getAt {
         parameter self, v.
         return orbitWithTrueAnomaly(self["body"], self["eccentricity"], self["semiMajorAxis"], self["inclination"], self["longitudeOfAscendingNode"], self["argumentOfPeriapsis"], v).
     }
 
-    function after {
+    function getAfter {
         parameter self, t.
         local e is self["eccentricity"].
         local a is self["semiMajorAxis"].
         local body is self["body"].
 
         local dM is orbitMeanAnomaly(a, body:mu, t).
-        local M is meanAnomaly(self) + dM.
+        local M is getMeanAnomaly(self) + dM.
         local v is orbitTrueAnomaly(M, e).
         return orbitWithTrueAnomaly(body, e, a, self["inclination"], self["longitudeOfAscendingNode"], self["argumentOfPeriapsis"], v).
      }
 
-     function inclined {
+     function getInclined {
         parameter self, i.
         return orbitWithTrueAnomaly(self["body"], self["eccentricity"], self["semiMajorAxis"], i, self["longitudeOfAscendingNode"], self["argumentOfPeriapsis"], self["trueAnomaly"]).
      }
 
     // (4.21)
-    function periapsis {
+    function getPeriapsis {
         parameter self.
         return self["semiMajorAxis"] * (1 - self["eccentricity"]).
     }
 
     // (4.22)
-    function apoapsis {
+    function getApoapsis {
         parameter self.
         return self["semiMajorAxis"] * (1 + self["eccentricity"]).
     }
 
     // (4.39)
-    function meanMotion {
+    function getMeanMotion {
         parameter self.
         return orbitMeanMotion(self["semiMajorAxis"], self["body"]:mu).
     }
 
     // (4.40)
-    function eccentricAnomaly {
+    function getEccentricAnomaly {
         parameter self.
         local v is self["trueAnomaly"].
         local e is self["eccentricity"].
@@ -189,7 +189,7 @@ runOncePath("lib_dd").
     }
 
     // (4.87)
-    function hyperbolicEccentricity {
+    function getHyperbolicEccentricity {
         parameter self.
         local v is self["trueAnomaly"].
         local cosv is cos(v).
@@ -200,14 +200,14 @@ runOncePath("lib_dd").
     }
 
     // (4.41)
-    function meanAnomaly {
+    function getMeanAnomaly {
         parameter self.
-        local E is eccentricAnomaly(self).
+        local E is getEccentricAnomaly(self).
         return (E * constant:degToRad - self["eccentricity"] * sin(E)) * constant:radToDeg.
     }
 
     // (4.43)
-    function radius {
+    function getRadius {
         parameter self.
         local e is self["eccentricity"].
         local a is self["semiMajorAxis"] * (1 - e ^ 2).
@@ -216,7 +216,7 @@ runOncePath("lib_dd").
     }
 
     // (4.44)
-    function azimuth {
+    function getAzimuth {
         parameter self.
         local v is self["trueAnomaly"].
         local e is self["eccentricity"].
@@ -226,34 +226,34 @@ runOncePath("lib_dd").
     }
 
     // (4.45)
-    function velocityMagnitude {
+    function getVelocityMagnitude {
         parameter self.
-        return sqrt(self["body"]:mu * (2 / radius(self) - 1 / self["semiMajorAxis"])).
+        return sqrt(self["body"]:mu * (2 / getRadius(self) - 1 / self["semiMajorAxis"])).
     }
 
     // Easy, but probably inaccurate and slow.
     // See http://www.orbiter-forum.com/showthread.php?t=24457 for another idea
     // but we'd need to determine h vector.
-    function velocity {
+    function getVelocity {
         parameter self.
         if self["eccentricity"] < 1 {
-            return position(after(self, 0.5)) - position(after(self, -0.5)).
+            return (getPosition(getAfter(self, 1)) - getPosition(getAfter(self, -1))) / 2.
         }
         local v is self["trueAnomaly"].
         local dv is 0.1.
         until false {
-            local s is abs(secondsToTrueAnomaly(self, v + dv)).
+            local s is abs(getSecondsToTrueAnomaly(self, v + dv)).
             if s <= 1 {
-                local orbit1 is at(self, v - dv).
-                local orbit2 is at(self, v + dv).
-                return (position(orbit2) - position(orbit1)) / secondsToTrueAnomaly(orbit1, orbit2["trueAnomaly"]).
+                local orbit1 is getAt(self, v - dv).
+                local orbit2 is getAt(self, v + dv).
+                return (getPosition(orbit2) - getPosition(orbit1)) / getSecondsToTrueAnomaly(orbit1, orbit2["trueAnomaly"]).
             }
             set dv to dv / s / 2.
         }
     }
 
     // http://www.braeunig.us/space/plntpos.htm#coordinates
-    function position {
+    function getPosition {
         parameter self.
         local i is self["inclination"].
 
@@ -261,14 +261,14 @@ runOncePath("lib_dd").
         local l_W is norDeg(arctan(cos(i) * sin(u) / cos(u))).
         // "If i < 90º, as for the major planets, (l – W) and u must lie in the
         // same quadrant."
-        local l is l_W + self["longitudeOfAscendingNode"] - self["body"]:rotationAngle.
+        local l is l_W + self["longitudeOfAscendingNode"].
         //print "l_W: " + l_W + " u: " + u.
         if (l_W > 180) <> (u > 180) {
             //print "beep.".
             set l to l + 180.
         }
         local b is arcsin(sin(u) * sin(i)).
-        local r is radius(self).
+        local r is getRadius(self).
 
         //print "u: " + round(u) + " l_W: " + round(l_W) + " + loan: " + round(self["longitudeOfAscendingNode"]) + " long: " + round(l) + " lat: " + round(b) + " r: " + r.
         //print "longitude: " + longitude + " rotation: " + body:rotationAngle.
@@ -280,30 +280,30 @@ runOncePath("lib_dd").
     }
 
     // (4.38)
-    function secondsToMeanAnomaly {
+    function getSecondsToMeanAnomaly {
         parameter self, M.
-        set M to M - meanAnomaly(self).
+        set M to M - getMeanAnomaly(self).
         if M < 0 { set M to M + 360. }
-        return M / meanMotion(self).
+        return M / getMeanMotion(self).
     }
 
     // (4.86)
-    function secondsToTrueAnomaly {
+    function getSecondsToTrueAnomaly {
         parameter self, v.
         local e is self["eccentricity"].
-        local orbit is at(self, v).
+        local orbit is getAt(self, v).
         if e < 1 {
-            return norDeg(meanAnomaly(orbit) - meanAnomaly(self)) / meanMotion(self).
+            return norDeg(getMeanAnomaly(orbit) - getMeanAnomaly(self)) / getMeanMotion(self).
         }
-        local F is hyperbolicEccentricity(orbit).
-        local F0 is hyperbolicEccentricity(self).
+        local F is getHyperbolicEccentricity(orbit).
+        local F0 is getHyperbolicEccentricity(self).
         local a is e * sinh(F) - F.
         local b is e * sinh(F0) - F0.
         local c is sqrt(((-self["semiMajorAxis"]) ^ 3) / self["body"]:mu).
         return (a - b) * c.
     }
 
-    function period {
+    function getPeriod {
         parameter self.
         return 2 * constant:pi * sqrt(self["semiMajorAxis"] ^ 3 / self["body"]:mu).
     }
