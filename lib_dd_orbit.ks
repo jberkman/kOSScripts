@@ -3,6 +3,8 @@
 // This file is distributed under the terms of the MIT license.
 // Based on Robert A. Braeunig's site http://www.braeunig.us/space/basics.htm
 
+@lazyglobal off.
+
 runOncePath("lib_dd").
 
 {
@@ -79,6 +81,8 @@ runOncePath("lib_dd").
         self:add("secondsToMeanAnomaly", getSecondsToMeanAnomaly@).
         //self:add("trueAnomalyAtRadius", getTrueAnomalyAtRadius@).
         self:add("secondsToTrueAnomaly", getSecondsToTrueAnomaly@).
+        self:add("longitude", getLongitude@).
+        self:add("latitude", getLatitude@).
         return self.
     }
 
@@ -253,7 +257,14 @@ runOncePath("lib_dd").
     }
 
     // http://www.braeunig.us/space/plntpos.htm#coordinates
-    function getPosition {
+    function getLatitude {
+        parameter self.
+        local i is self["inclination"].
+        local u is norDeg(self["trueAnomaly"] + self["argumentOfPeriapsis"]).
+        return arcsin(sin(u) * sin(i)).    
+    }
+
+    function getLongitude {
         parameter self.
         local i is self["inclination"].
 
@@ -267,11 +278,16 @@ runOncePath("lib_dd").
             //print "beep.".
             set l to l + 180.
         }
-        local b is arcsin(sin(u) * sin(i)).
+        return norDeg(l).
+    }
+
+    function getPosition {
+        parameter self.
+
+        local b is getLatitude(self).
+        local l is getLongitude(self).
         local r is getRadius(self).
 
-        //print "u: " + round(u) + " l_W: " + round(l_W) + " + loan: " + round(self["longitudeOfAscendingNode"]) + " long: " + round(l) + " lat: " + round(b) + " r: " + r.
-        //print "longitude: " + longitude + " rotation: " + body:rotationAngle.
         local x is r * cos(b) * cos(l).
         local y is r * sin(b).
         local z is r * cos(b) * sin(l).
