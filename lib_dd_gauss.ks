@@ -10,38 +10,55 @@ runOncePath("lib_dd_orbit").
 
 {
     global Gauss is lex(
+        "addNode", addNode@,
+        "captureVelocity", getCaptureVelocity@,
+        "departureVelocity", getDepartureVelocity@,
         "estimatedDuration", estimatedDuration@,
-        "withOrbits", withOrbits@,
-        "withGauss", withGauss@
+        "findEncounter", findEncounter@,
+        "init", gaussInit@,
+        "orbit", getOrbit@,
+        "solve", solve@
     ).
 
     function estimatedDuration {
-        parameter origin, destination.
-        local rA is origin:semiMajorAxis.
-        local rB is destination:semiMajorAxis.
+        parameter r1, r2.
+        local rA is r1:semiMajorAxis.
+        local rB is r2:semiMajorAxis.
         local aTX is (rA + rB) / 2.
-        return constant:pi * sqrt(aTX ^ 3 / origin:body:mu).
+        return constant:pi * sqrt(aTX ^ 3 / r1:body:mu).
     }
 
-    function withOrbits {
-        parameter origin, dest, tTX, goalPhase is 175.
+    function gaussInit {
+        parameter body, r1, r2, dt, dv is 0.
+        if dv = 0 { set dv to vang(r1, r2). }
+        return lex(
+            "body", body,
+            "r1", r1,
+            "r2", r2,
+            "transferTime", dt,
+            "trueAnomaly", dv
+        ).
+    }
 
-        if origin:body <> dest:body { print 1 / 0. }
+    function findEncounter {
+        parameter orbit1, orbit2, tTX, goalPhase is 175.
+
+        if orbit1:body <> orbit2:body { print 1 / 0. }
 
         local lower is 300.
-        local upper is lower + 1 / (1 / origin:period - 1 / dest:period).
+        local upper is lower + 1 / (1 / orbit1:period - 1 / orbit2:period).
         local t is lower.
 
-        local origin0 is DDOrbit["withOrbit"](origin).
-        local originT is false.
+        local orbit10 is DDOrbit["withOrbit"](orbit1).
+        local orbit1T is false.
 
-        local dest0 is DDOrbit["withOrbit"](dest).
-        local destTTX is false.
+        local orbit20 is DDOrbit["withOrbit"](orbit2).
+        local orbit2TTX is false.
 
         function phase {
-            set originT to origin0["after"](origin0, t).
-            set destTTX to dest0["after"](dest0, t + tTX).
-            return norDeg(destTTX["longitude"](destTTX) - originT["longitude"](originT)).
+            set orbit1T to orbit10["after"](orbit10, t).
+            set orbit2TTX to orbit20["after"](orbit20, t + tTX).
+            return norDeg(orbit2TTX["longitude"](orbit2TTX) - orbit1T["longitude"](orbit1T)).
         }
 
         function testIncreasing {
@@ -57,7 +74,7 @@ runOncePath("lib_dd_orbit").
         local lowerTest is testIncreasing@.
         local upperTest is testDecreasing@.
 
-        if origin:semiMajorAxis > dest:semiMajorAxis {
+        if orbit1:semiMajorAxis > orbit2:semiMajorAxis {
             set lowerTest to testDecreasing@.
             set upperTest to testIncreasing@.
         }
@@ -91,31 +108,31 @@ runOncePath("lib_dd_orbit").
             set inc to -inc / 2.
         }
 
-        local originPos is originT["position"](originT).
-        local destPos is destTTX["position"](destTTX).
-
-        local self is withGauss(origin:body, originPos, destPos, tTX).
-        set self["departureTime"] to time:seconds + t.
+        local self is gaussInit(orbit1:body, orbit1T["position"](orbit1T), orbit2TTX["position"](orbit2TTX), tTX, prevPhase).
+        self:add("departureTime", time:seconds + t).
         return self.
     }
 
-    function withGauss {
-        parameter body, origin, destination, duration.
+    function solve {
+        parameter self.
 
-        local r1 is origin:mag.
-        local r2 is destination:mag.
-        local v is vang(origin, destination).
-        local cosv is cos(v).
-        local sinv is sin(v).
+        local mu is self["body"]:mu.
+        local dt is self["transferTime"].
+        local dv is self["trueAnomaly"].
 
-        // Evaluate the constants l k, and m from r1, r2 and v using equations
+        local r1_ is self["r1"]:mag.
+        local r2_ is self["r2"]:mag.
+        local cosv is cos(dv).
+        local sinv is sin(dv).
+
+        // Evaluate the constants l k, and m from r1_, r2_ and v using equations
         // (5.9) through (5.11)
         // (5.9)
-        local k is r1 * r2 * (1 - cosv).
+        local k is r1_ * r2_ * (1 - cosv).
         // (5.10)
-        local l is r1 + r2.
+        local l is r1_ + r2_.
         // (5.11)
-        local m is r1 * r2 * (1 + cosv).
+        local m is r1_ * r2_ * (1 + cosv).
         
         // Determine the limits on the possible values of p by evaluating pi and
         // pii from equations (5.18) and (5.19).
@@ -139,9 +156,9 @@ runOncePath("lib_dd_orbit").
 
             // Solve for f and g from equations (5.5), (5.6) and (5.7)
             // (5.5)
-            local f is Kepler["f"](r2, p, v).
+            local f is Kepler["f"](r2_, p, dv).
             // (5.6)
-            local g is Kepler["g"](r1, r2, body:mu, p, v).
+            local g is Kepler["g"](r1_, r2_, mu, p, dv).
 
             local t is 0.
             // Solve for E or F, as appropriate, using equations (5.13) and
@@ -149,14 +166,14 @@ runOncePath("lib_dd_orbit").
             // Solve for t from equation (5.16) or (5.17)
             if a > 0 {
                 // (5.13)
-                local dE is norDeg(arccos(1 - r1 * (1 - f) / a)).
+                local dE is norDeg(arccos(1 - r1_ * (1 - f) / a)).
                 // (5.16)
-                set t to g + sqrt(a ^ 3 / body:mu) * (dE * constant:degToRad - sin(dE)).
+                set t to g + sqrt(a ^ 3 / mu) * (dE * constant:degToRad - sin(dE)).
             } else {
                 // (5.15)
-                local dF is norDeg(arccosh(1 - r1 / a * (1 - f))).
+                local dF is norDeg(arccosh(1 - r1_ / a * (1 - f))).
                 // (5.17)
-                set t to g + sqrt(-a ^ 3 / body:mu) * (sinh(dF) - dF * constant:degToRad).
+                set t to g + sqrt(-a ^ 3 / mu) * (sinh(dF) - dF * constant:degToRad).
             }
 
             return lex("p", p, "a", a, "t", t).
@@ -166,32 +183,21 @@ runOncePath("lib_dd_orbit").
         local pat is eval(p1).
         local pat0 is eval(p0).
         // compare t with the desired time-of-flight.
-        until abs(duration - pat["t"]) < 60 * 60 {
-            print "duration: " + duration + " t: " + pat["t"].
+        until abs(dt - pat["t"]) < 60 * 60 {
+            print "dt: " + dt + " t: " + pat["t"].
             // Adjust the trial value of p using one of the iteration methods
             // discussed above until the desired time-of-flight is obtained.
             print "pat: " + pat.
             print "pat0: " + pat0.
-            local p is pat["p"] + (duration - pat["t"]) * (pat["p"] - pat0["p"]) / (pat["t"] - pat0["t"]).
+            local p is pat["p"] + (dt - pat["t"]) * (pat["p"] - pat0["p"]) / (pat["t"] - pat0["t"]).
             set pat0 to pat.
             set pat to eval(p).
             wait 0.
         }
 
-        local self is lex(
-            "body", body,
-            "origin", origin:vec,
-            "destination", destination:vec,
-            "trueAnomaly", v,
-            "parameter", pat["p"],
-            "semiMajorAxis", pat["a"],
-            "time", pat["t"]
-        ).
-
-        self:add("addNode", addNode@).
-        self:add("captureVelocity", getCaptureVelocity@).
-        self:add("departureVelocity", getDepartureVelocity@).
-        self:add("orbit", getOrbit@).
+        self:add("parameter", pat["p"]).
+        self:add("semiMajorAxis", pat["a"]).
+        self:add("time", pat["t"]).
 
         return self.
     }
@@ -199,19 +205,19 @@ runOncePath("lib_dd_orbit").
     // (5.3)
     function getDepartureVelocity {
         parameter self.
-        return Kepler["v1"](self["origin"], self["destination"], self["body"]:mu, self["parameter"], self["trueAnomaly"]).
+        return Kepler["v1"](self["r1"], self["r2"], self["body"]:mu, self["parameter"], self["trueAnomaly"]).
     }
 
     // (5.4)
     function getCaptureVelocity {
         parameter self.
-        return Kepler["v2"](self["origin"], self["destination"], self["body"]:mu, self["parameter"], self["trueAnomaly"]).
+        return Kepler["v2"](self["r1"], self["r2"], self["body"]:mu, self["parameter"], self["trueAnomaly"]).
     }
 
     // (5.7)
     function getOrbit {
         parameter self.
-        return DDOrbit["withVectors"](self["body"], self["origin"], departureVelocity(self)).
+        return DDOrbit["withVectors"](self["body"], self["r1"], departureVelocity(self)).
     }
 
     function addNode {

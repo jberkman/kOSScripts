@@ -1,9 +1,11 @@
 //
 clearScreen.
 runOncePath("lib_dd_gauss").
+parameter tgt is Mun.
 
-local tTX is Gauss["estimatedDuration"](obt, Mun:obt).
-local xfer is Gauss["withOrbits"](obt, Mun:obt, tTX).
+local tTX is Gauss["estimatedDuration"](obt, tgt:obt).
+local xfer is Gauss["findEncounter"](obt, tgt:obt, tTX).
+Gauss["solve"](xfer).
 
 local orbit is DDOrbit["withOrbit"](obt).
 set deltaT to xfer["departureTime"] - time:seconds.
@@ -11,7 +13,7 @@ print "deltaT:  " + round(deltaT).
 set orbit to orbit["after"](orbit, xfer["departureTime"] - time:seconds).
 
 local v0 is orbit["velocity"](orbit).
-local v1 is xfer["departureVelocity"](xfer).
+local v1 is Gauss["departureVelocity"](xfer).
 
 print "dv: " + xfer["trueAnomaly"].
 print "p: " + xfer["parameter"].
@@ -28,4 +30,4 @@ print "dV: " + (v1 - v0).
 print "dV_: " + (v1 - v0):mag.
 print " ".
 print vang(v0, v1).
-xfer["addNode"](xfer, obt).
+Gauss["addNode"](xfer, obt).
