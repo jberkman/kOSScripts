@@ -62,28 +62,28 @@ runOncePath("lib_dd").
     }
 
     function createOrbit {
-        local self is lex().
-        self:add("periapsis", getPeriapsis@).
-        self:add("apoapsis", getApoapsis@).
-        self:add("meanMotion", getMeanMotion@).
-        self:add("eccentricAnomaly", getEccentricAnomaly@).
-        self:add("hyperbolicEccentricity", getHyperbolicEccentricity@).
-        self:add("meanAnomaly", getMeanAnomaly@).
-        self:add("radius", getRadius@).
-        self:add("azimuth", getAzimuth@).
-        self:add("velocityMagnitude", getVelocityMagnitude@).
-        self:add("velocity", getVelocity@).
-        self:add("position", getPosition@).
-        self:add("period", getPeriod@).
-        self:add("at", getAt@).
-        self:add("after", getAfter@).
-        self:add("inclined", getInclined@).
-        self:add("secondsToMeanAnomaly", getSecondsToMeanAnomaly@).
-        //self:add("trueAnomalyAtRadius", getTrueAnomalyAtRadius@).
-        self:add("secondsToTrueAnomaly", getSecondsToTrueAnomaly@).
-        self:add("longitude", getLongitude@).
-        self:add("latitude", getLatitude@).
-        return self.
+        return lex(
+            "periapsis", getPeriapsis@,
+            "apoapsis", getApoapsis@,
+            "meanMotion", getMeanMotion@,
+            "eccentricAnomaly", getEccentricAnomaly@,
+            "hyperbolicEccentricity", getHyperbolicEccentricity@,
+            "meanAnomaly", getMeanAnomaly@,
+            "radius", getRadius@,
+            "azimuth", getAzimuth@,
+            "velocityMagnitude", getVelocityMagnitude@,
+            "velocity", getVelocity@,
+            "position", getPosition@,
+            "period", getPeriod@,
+            "at", getAt@,
+            "after", getAfter@,
+            "inclined", getInclined@,
+            "secondsToMeanAnomaly", getSecondsToMeanAnomaly@,
+        //    "trueAnomalyAtRadius", getTrueAnomalyAtRadius@,
+            "secondsToTrueAnomaly", getSecondsToTrueAnomaly@,
+            "longitude", getLongitude@,
+            "latitude", getLatitude@
+        ).
     }
 
     function orbitWithOrbit {
