@@ -325,6 +325,7 @@ runOncePath("lib_dd").
     function getTrueAnomalyAtLongitude {
         parameter self, longitude.
         local u is arctan(tan(longitude - self["longitudeOfAscendingNode"]) / cos(self["inclination"])).
+        return norDeg(u - self["argumentOfPeriapsis"]).
     }
 
     function getPosition {
