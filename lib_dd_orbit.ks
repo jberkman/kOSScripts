@@ -12,6 +12,7 @@ runOncePath("lib_dd").
         "trueAnomaly", orbitTrueAnomaly@,
         "meanMotion", orbitMeanMotion@,
         "meanAnomaly", orbitMeanAnomaly@,
+        "interceptLongitude", orbitInterceptLongitude@,
         "phi", orbitPhi@,
         "withOrbit", orbitWithOrbit@,
         "withMeanAnomaly", orbitWithMeanAnomaly@,
@@ -19,6 +20,38 @@ runOncePath("lib_dd").
         "withAltitude", orbitWithAltitude@,
         "withVectors", orbitWithVectors@
     ).
+
+    function orbitInterceptLongitude {
+        parameter src, dst.
+
+        local l1 is src:obt:longitudeOfAscendingNode.
+        local l2 is dst:obt:longitudeOfAscendingNode.
+
+        local cosi1 is cos(src:obt:inclination).
+        local sini1 is sin(src:obt:inclination).
+        local cosi2 is cos(dst:obt:inclination).
+        local sini2 is sin(dst:obt:inclination).
+
+        function iter {
+            parameter min, max, inc.
+            local bestX is 99999.
+            local ret is -1.
+            local i is min.
+            until i >= max {
+                local x is sin(arctan(tan(i - l1) / cosi1)) * sini1.
+                set x to abs(x - sin(arctan(tan(i - l2) / cosi2)) * sini2).
+                if x < bestX {
+                    set bestX to x.
+                    set ret to i.
+                }
+                set i to i + inc.
+            }
+            return ret.
+        }
+
+        local x is iter(0, 180, 2.5).
+        return iter(max(0, x - 2.5), min(x + 2.5, 180), 0.025).
+    }
 
     function orbitTrueAnomaly {
         parameter M, e.
@@ -82,7 +115,9 @@ runOncePath("lib_dd").
         //    "trueAnomalyAtRadius", getTrueAnomalyAtRadius@,
             "secondsToTrueAnomaly", getSecondsToTrueAnomaly@,
             "longitude", getLongitude@,
-            "latitude", getLatitude@
+            "latitude", getLatitude@,
+            "latitudeAtLongitude", getLatitudeAtLongitude@,
+            "trueAnomalyAtLongitude", getTrueAnomalyAtLongitude@
         ).
     }
 
@@ -279,6 +314,17 @@ runOncePath("lib_dd").
             set l to l + 180.
         }
         return norDeg(l).
+    }
+
+    function getLatitudeAtLongitude {
+        parameter self, longitude.
+        local u is arctan(tan(longitude - self["longitudeOfAscendingNode"]) / cos(self["inclination"])).
+        return arcsin(sin(u) * sin(self["inclination"])). 
+    }
+
+    function getTrueAnomalyAtLongitude {
+        parameter self, longitude.
+        local u is arctan(tan(longitude - self["longitudeOfAscendingNode"]) / cos(self["inclination"])).
     }
 
     function getPosition {
