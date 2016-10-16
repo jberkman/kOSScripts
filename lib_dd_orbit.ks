@@ -325,6 +325,9 @@ runOncePath("lib_dd").
     function getTrueAnomalyAtLongitude {
         parameter self, longitude.
         local u is arctan(tan(longitude - self["longitudeOfAscendingNode"]) / cos(self["inclination"])).
+        if (longitude > 180) <> (u > 180) {
+            set u to u - 180.
+        }
         return norDeg(u - self["argumentOfPeriapsis"]).
     }
 
