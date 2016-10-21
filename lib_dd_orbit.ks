@@ -65,7 +65,7 @@ runOncePath("lib_dd").
             local fx is e * sin(x * constant:radToDeg) - x + M.
             local f_x is e * cos(x * constant:radToDeg) - 1.
             local x_ is x - fx / f_x.
-            if abs(x - x_) < 0.001 { set E_ to x_. break. }
+            if abs(x - x_) < 0.0001 { set E_ to x_. break. }
             set x to x_.
         }
 
@@ -84,9 +84,7 @@ runOncePath("lib_dd").
     function orbitMeanAnomaly {
         parameter a, mu, t.
         local n is orbitMeanMotion(a, mu).
-        local p is 360 / n.
-        local t2 is mod(t, p).
-        return norDeg(t2 * n).
+        return n * mod(t, 360 / n).
     }
 
     function orbitPhi {
@@ -123,7 +121,7 @@ runOncePath("lib_dd").
 
     function orbitWithOrbit {
         parameter obt.
-        return orbitWithTrueAnomaly(obt:body, obt:eccentricity, obt:semiMajorAxis, obt:inclination, obt:argumentOfPeriapsis, obt:longitudeOfAscendingNode, obt:trueAnomaly).
+        return orbitWithTrueAnomaly(obt:body, obt:eccentricity, obt:semiMajorAxis, obt:inclination, obt:longitudeOfAscendingNode, obt:argumentOfPeriapsis, obt:trueAnomaly).
     }
 
     function orbitWithMeanAnomaly {
@@ -184,9 +182,16 @@ runOncePath("lib_dd").
         local a is self["semiMajorAxis"].
         local body is self["body"].
 
+        local M is getMeanAnomaly(self).
         local dM is orbitMeanAnomaly(a, body:mu, t).
-        local M is getMeanAnomaly(self) + dM.
-        local v is orbitTrueAnomaly(M, e).
+        local v is orbitTrueAnomaly(norDeg(M + dM), e).
+
+        if false {
+            print " M: " + round(M, 1).
+            print "dM: " + round(dM, 1).
+            print " v: " + round(v, 1).
+        }
+
         return orbitWithTrueAnomaly(body, e, a, self["inclination"], self["longitudeOfAscendingNode"], self["argumentOfPeriapsis"], v).
      }
 
@@ -231,8 +236,11 @@ runOncePath("lib_dd").
     function getHyperbolicEccentricity {
         parameter self.
         local v is self["trueAnomaly"].
+        local e is self["eccentricity"].
+
         local cosv is cos(v).
-        local a is self["eccentricity"] + cosv.
+        local a is e + cosv.
+        local b is 1 + e * cosv.
         local F is arccosh(abs(a / b)).
         if v >= 0 { return F. }
         return -F.
@@ -242,7 +250,8 @@ runOncePath("lib_dd").
     function getMeanAnomaly {
         parameter self.
         local E is getEccentricAnomaly(self).
-        return (E * constant:degToRad - self["eccentricity"] * sin(E)) * constant:radToDeg.
+        if false { print "E: " + E. }
+        return E - self["eccentricity"] * sin(E) * constant:radToDeg.
     }
 
     // (4.43)
@@ -294,16 +303,16 @@ runOncePath("lib_dd").
     // http://www.braeunig.us/space/plntpos.htm#coordinates
     function getLatitude {
         parameter self.
+        local u is self["argumentOfPeriapsis"] + self["trueAnomaly"].
         local i is self["inclination"].
-        local u is norDeg(self["trueAnomaly"] + self["argumentOfPeriapsis"]).
-        return arcsin(sin(u) * sin(i)).    
+        return arcsin(sin(u) * sin(i)).
     }
 
     function getLongitude {
         parameter self.
         local i is self["inclination"].
 
-        local u is norDeg(self["trueAnomaly"] + self["argumentOfPeriapsis"]).
+        local u is self["trueAnomaly"] + self["argumentOfPeriapsis"].
         local l_W is norDeg(arctan(cos(i) * sin(u) / cos(u))).
         // "If i < 90º, as for the major planets, (l – W) and u must lie in the
         // same quadrant."

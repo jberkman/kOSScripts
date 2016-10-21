@@ -7,6 +7,22 @@
 
 global bodies is list(Sun, Moho, Eve, Gilly, Kerbin, Mun, Minmus, Duna, Ike, Jool, Laythe, Vall, Tylo, Bop, Pol, Eeloo).
 
+{
+  local minToSec  is 60.
+  local hourToSec is 60 * minToSec.
+  local dayToSec  is  6 * hourToSec.
+
+  global DDConstant is lex(
+    "minToSec", minToSec,
+    "hourToSec", hourToSec,
+    "dayToSec",  dayToSec,
+
+    "secToMin", 1 / minToSec,
+    "secToHour", 1 / hourToSec,
+    "secToDay", 1 / dayToSec
+  ).
+}
+
 function altitudeForPeriod {
   parameter body, t.
   return (body:mu / 4 * (t / constant:pi) ^ 2) ^ (1 / 3) - body:radius.
@@ -232,7 +248,7 @@ function shipToSOI {
 
 function shipRawToSOIUniversal {
   parameter vec, body.
-  rawToUniversal(shipToSOI(vec, body)).
+  return rawToUniversal(shipToSOI(vec, body)).
 }
 
 function sinh {
@@ -304,6 +320,14 @@ function steerToDir {
 
 function steerToVec {
   wait until vAng(steering, facing:vector) < 5.
+}
+
+function toTimestamp {
+    parameter years is 0, days is 0, hours is 0, minutes is 0, seconds is 0.
+    return (years * 426 + days) * DDConstant["dayToSec"] +
+      hours * DDConstant["hourToSec"] +
+      minutes * DDConstant["minToSec"] +
+      seconds.
 }
 
 function universalToRaw {
