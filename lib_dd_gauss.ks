@@ -166,12 +166,19 @@ runOncePath("lib_dd_orbit").
             // Solve for t from equation (5.16) or (5.17)
             if a > 0 {
                 // (5.13)
-                local dE is norDeg(arccos(1 - r1_ * (1 - f) / a)).
+                local cosDE is 1 - r1_ * (1 - f) / a.
+
+                local fDot is Kepler["fDot"](r1_, r2_, mu, p, dv).
+
+                // (5.14)
+                local sinDE is -r1_ * r2_ * fDot / sqrt(mu * a).
+                local dE is norDeg(arctan2(sinDE, cosDE)).
+                print "dE: " + dE.
                 // (5.16)
                 set t to g + sqrt(a ^ 3 / mu) * (dE * constant:degToRad - sin(dE)).
             } else {
                 // (5.15)
-                local dF is norDeg(arccosh(1 - r1_ / a * (1 - f))).
+                local dF is arccosh(1 - r1_ / a * (1 - f)).
                 // (5.17)
                 set t to g + sqrt(-a ^ 3 / mu) * (sinh(dF) - dF * constant:degToRad).
             }
@@ -217,7 +224,7 @@ runOncePath("lib_dd_orbit").
     // (5.7)
     function getOrbit {
         parameter self.
-        return DDOrbit["withVectors"](self["body"], self["r1"], departureVelocity(self)).
+        return DDOrbit["withVectors"](self["body"], self["r1"], getDepartureVelocity(self)).
     }
 
     function addNode {

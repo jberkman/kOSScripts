@@ -1,0 +1,15 @@
+local src is obt.
+local dst is target:obt.
+
+
+local lower is 300.
+local upper is lower + 1 / (1 / orbit1:period - 1 / orbit2:period).
+local t is lower.
+
+set src to DDOrbit["withOrbit"](src).
+set dst to DDOrbit["withOrbit"](dst).
+
+local src1 is src["after"](src, t).
+local long1 is src["longitude"](src).
+local long2 is long1 + 180.
+local tv2 is src1["trueAnomalyAtLongitude"](src1, long2).

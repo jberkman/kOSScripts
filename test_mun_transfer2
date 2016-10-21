@@ -1,7 +1,7 @@
 //
 clearScreen.
 runOncePath("lib_dd_gauss").
-parameter tgt is Mun.
+parameter tgt is Minmus.
 
 local tTX is Gauss["estimatedDuration"](obt, tgt:obt).
 local xfer is Gauss["findEncounter"](obt, tgt:obt, tTX).
