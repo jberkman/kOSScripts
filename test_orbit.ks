@@ -4,9 +4,30 @@
 
 @lazyglobal off.
 clearScreen.
+clearVecDraws().
 
 runOncePath("KSLib/unit_tests/lib_exec/lib_testing").
 runOncePath("lib_dd_orbit").
+
+{
+    local r is shipRawToSOIUniversal(moho:position, sun).
+    local v is rawToUniversal(moho:velocity:orbit).
+    local orbit is DDOrbit["withVectors"](sun, r, v).
+    print "eccentricity: " + orbit["eccentricity"].
+    print "semiMajorAxis: " + orbit["semiMajorAxis"].
+    print "inclination: " + orbit["inclination"].
+    print "longitudeOfAscendingNode: " + orbit["longitudeOfAscendingNode"].
+    print "argumentOfPeriapsis: " + orbit["argumentOfPeriapsis"].
+    print "trueAnomaly: "+ orbit["trueAnomaly"].
+    print " ".
+    print "eccentricity: " + (moho:obt:eccentricity - orbit["eccentricity"]).
+    print "semiMajorAxis: " + (moho:obt:semiMajorAxis - orbit["semiMajorAxis"]).
+    print "inclination: " + (moho:obt:inclination - orbit["inclination"]).
+    print "longitudeOfAscendingNode: " + (moho:obt:longitudeOfAscendingNode - orbit["longitudeOfAscendingNode"]).
+    print "argumentOfPeriapsis: " + (moho:obt:argumentOfPeriapsis - orbit["argumentOfPeriapsis"]).
+    print "trueAnomaly: "+ (moho:obt:trueAnomaly - orbit["trueAnomaly"]).
+    assert(false).
+}
 
 if false {
     local orbit is DDOrbit["withOrbit"](Moho:obt).

@@ -150,21 +150,21 @@ runOncePath("lib_dd").
 
     function orbitWithVectors {
         parameter body, r, v.
-        local h is vcrs(r, v).
-        local n is vcrs(V(0, 0, 1), h).
+        local h is vcrs(v, r).
+        local n is vcrs(h, V(0, 1, 0)).
 
         local x is r * (v:mag ^ 2 - body:mu / r:mag).
         local y is (r * v) * v.
         local e is (x - y) / body:mu.
 
         local a is 1 / (2 / r:mag - v:mag ^ 2 / body:mu).
-        local i is arccos(h:z / h:mag).
+        local i is arccos(h:y / h:mag).
 
         local loan is arccos(n:x / n:mag).
         if n:y < 0 { set loan to 360 - loan. }
 
-        local aop is arccos((n * e) / n:mag / e:mag).
-        if e:z < 0 { set aop to 360 - aop. }
+        local aop is arccos(clamp(n * e / n:mag / e:mag, -1, 1)).
+        if e:y < 0 { set aop to 360 - aop. }
 
         local v is arccos((e * r) / e:mag / r:mag).
 

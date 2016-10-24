@@ -25,8 +25,6 @@
 
         local u is (1 - x) * (1 + x).
 
-        print "    " + 1 + "    " + qSq + "    " + xSq + "    " + u.
-
         local t is 0.
         local dT is 0.
         local d2T is 0.
@@ -58,10 +56,7 @@
                 set b to qSqFm1 * (qSq * u - xSq) / bb.
             }
 
-            if lM1 {
-                print "    6    " + q + "    " + x + "    " + z.
-                return list(t, b, bb, aa).
-            }
+            if lM1 { return list(t, b, bb, aa). }
 
             local g is false.
             if qx * u >= 0 {
@@ -143,7 +138,6 @@
         }
 
         if lM1 or x < 0 or abs(u) > 0.4 { return directComputation(). }
-        print "doing series computation!".
         return seriesComputation().
     }
 
@@ -154,7 +148,6 @@
 
         local t0 is tLamb(q, qSqFm1, 0, 0)[0].
         local tDiff is tIn - t0.
-        print "    " + 2 + "    " + tDiff + "    " + tIn + "    " + t0.
         if tDiff < 0 {
             // (11)
             // -4 is the value of DT, for x = 0
@@ -188,9 +181,11 @@
     function vLamb {
         parameter mu, r1, r2, tDelta.
 
+        local normal is vCrs(r1, r2).
         local thetaR2 is vAng(r1, r2).
-        //if  V(0, 0, 1) * normal < 0 { set thetaR2 to 360 - thetaR2. }
-        set thetaR2 to (360 - thetaR2) / 2.
+        print "thetaR2: " + thetaR2 + " thing: " + (V(0, 1, 0) * normal).
+        if  V(0, 1, 0) * normal < 0 { set thetaR2 to 360 - thetaR2. }
+        print "thetaR2: " + thetaR2.
 
         local r1_ is r1:mag.
         local r2_ is r2:mag.
@@ -210,31 +205,23 @@
         local t is 4 * muS * tDelta / s ^ 2.
 
         local x is xLamb(q, qSqFm1, t, thetaR2).
-        print "    3    " + (thetaR2 * constant:degToRad) + "    " + q + "    " + x + "    " + qsqfm1 + "    " + t.
-
         local tList is tLamb(q, qSqFm1, x, -1).
 
         local qzMinX is tList[1].
         local qzPlX  is tList[2].
         local zPlQX  is tList[3].
 
-        print "    4    " + qzMinX + "    " + qzPlX + "    " + zPlQX.
-        print "    5    " + sig + "    " + rho.
-
         local vR1 is  muS * (qzMinX - qzPlX * rho) / r1_.
         local vR2 is -muS * (qzMinX + qzPlX * rho) / r2_.
 
-        local vT1 is muS * zPlQX * sqrt(sig).
-        local vT2 is vT1 / r2_.
-        set   vT1 to vT1 / r1_.
+        local vT2 is muS * zPlQX * sqrt(sig).
+        local vT1 is vT2 / r1_.
+        set   vT2 to vT2 / r2_.
 
-        print "    7    " + vR1 + "    " + vT1.
-
-        local normal is vCrs(r2, r1).
-        local prograde is -vCrs(r1, normal).
+        local prograde is vCrs(r1, normal).
         local v1 is vR1 * r1:normalized + vT1 * prograde:normalized.
 
-        set prograde to -vCrs(r2, normal).
+        set prograde to vCrs(r2, normal).
         local v2 is vR2 * r2:normalized + vT2 * prograde:normalized.
 
         return list(v1, v2).

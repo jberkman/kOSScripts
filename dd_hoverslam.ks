@@ -21,10 +21,10 @@ local printCol is 8.
 
 local drawVecs is false.
 local o is v(0, 0, 0).
-local vecGrav is vecDrawArgs(o, o, yellow, "Gravity", 1, drawVecs).
-local vecDrag is vecDrawArgs(o, o, red,    "Goal",    1, drawVecs).
-local vecThrust is vecDrawArgs(o, o, cyan, "Thrust",  1, drawVecs).
-local vecAccel is vecDrawArgs(o, o, green, "NonThrust",   1, drawVecs).
+local vecGrav is vecDraw(o, o, yellow, "Gravity", 1, drawVecs).
+local vecDrag is vecDraw(o, o, red,    "Goal",    1, drawVecs).
+local vecThrust is vecDraw(o, o, cyan, "Thrust",  1, drawVecs).
+local vecAccel is vecDraw(o, o, green, "NonThrust",   1, drawVecs).
 
 function steeringDir {
   local burnHeading is compassForVec(ship, srfRetrograde:vector).
