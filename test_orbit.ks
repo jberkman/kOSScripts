@@ -11,7 +11,7 @@ runOncePath("lib_dd_orbit").
 
 {
     local r is shipRawToSOIUniversal(moho:position, sun).
-    local v is rawToUniversal(moho:velocity:orbit).
+    local v is rawToUniversal(moho:obt:velocity:orbit).
     local orbit is DDOrbit["withVectors"](sun, r, v).
     print "eccentricity: " + orbit["eccentricity"].
     print "semiMajorAxis: " + orbit["semiMajorAxis"].
@@ -26,7 +26,6 @@ runOncePath("lib_dd_orbit").
     print "longitudeOfAscendingNode: " + (moho:obt:longitudeOfAscendingNode - orbit["longitudeOfAscendingNode"]).
     print "argumentOfPeriapsis: " + (moho:obt:argumentOfPeriapsis - orbit["argumentOfPeriapsis"]).
     print "trueAnomaly: "+ (moho:obt:trueAnomaly - orbit["trueAnomaly"]).
-    assert(false).
 }
 
 if false {
@@ -53,6 +52,7 @@ if false {
     local expected is shipRawToSOIUniversal(positionAt(moho, t), sun).
     print "computed: " + computed + "    " + computed:mag.
     print "expected: " + expected + "    " + expected:mag.
+    print "          " + positionAt(moho, t).
     print "    " + (expected - computed):mag.
     assert((expected - computed):mag < 1000).
 }

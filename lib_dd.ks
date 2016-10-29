@@ -238,7 +238,9 @@ function pitchForVec {
 
 function rawToUniversal {
   parameter vec.
-  return R(0, vAng(V(1, 0, 0), solarPrimeVector), 0) * vec.
+  local theta is vAng(V(1, 0, 0), solarPrimeVector).
+  if vCrs(V(1, 0, 0), solarPrimeVector):y >= 0 { set theta to -theta. }
+  return R(0, theta, 0) * vec.
 }
 
 function shipToSOI {
