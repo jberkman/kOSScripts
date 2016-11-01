@@ -67,7 +67,7 @@ local tInc is windowDuration / 10.
 print "ETA window open: " + round(windowOpen * secToHour, 2).
 print "Duration: " + round(windowDuration * secToHour, 2).
 
-local t1 is windowOpen + windowDuration / 2.
+local t1 is windowOpen.
 local count is 0.
 until t1 > windowOpen + windowDuration {
     set count to count + 1.

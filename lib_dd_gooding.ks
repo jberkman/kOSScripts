@@ -25,7 +25,7 @@
 
         local u is (1 - x) * (1 + x).
 
-        print "    1    " + qsq + "    " + xsq + "    " + u.
+        //print "    1    " + qsq + "    " + xsq + "    " + u.
 
         local t is 0.
         local dT is 0.
@@ -59,7 +59,7 @@
             }
 
             if lM1 {
-                print "    6    " + q + "    " + x + "    " + z.
+                //print "    6    " + q + "    " + x + "    " + z.
                 return list(t, b, bb, aa).
             }
 
@@ -153,7 +153,7 @@
 
         local t0 is tLamb(q, qSqFm1, 0, 0)[0].
         local tDiff is tIn - t0.
-        print "    2    " + tDiff + "    " + tIn + "    " + t0.
+        //print "    2    " + tDiff + "    " + tIn + "    " + t0.
         if tDiff < 0 {
             // (11)
             // -4 is the value of DT, for x = 0
@@ -188,27 +188,21 @@
         parameter mu, r1, r2, tDelta.
 
         local normal is vCrs(r1, r2).
-        local thetaR2 is vAng(r1, r2).
-        print "    12    " + (thetaR2 * constant:degToRad) + "    " + (r1:normalized * r2:normalized).
-        print "    13    " + r1:normalized.
-        print "    14    " + r2:normalized.
-        print "thetaR2: " + thetaR2 + " thing: " + (V(0, 1, 0) * normal).
-        if  V(0, 1, 0) * normal > 0 { set thetaR2 to 360 - thetaR2. }
-        print "thetaR2: " + thetaR2.
-        set thetaR2 to thetaR2 / 2.
+        local thetaR2 is vAng(r1, r2) / 2.
+        //print "    12    " + (thetaR2 * constant:degToRad) + "    " + (r1:normalized * r2:normalized).
+        //print "    13    " + r1:normalized.
+        //print "    14    " + r2:normalized.
+        if V(0, 1, 0) * normal > 0 { set thetaR2 to 180 - thetaR2. }
 
         local r1_ is r1:mag.
         local r2_ is r2:mag.
         local r1r2 is r1_ * r2_.
         local c is (r2 - r1):mag.
         local s is (r1_ + r2_ + c) / 2.
-        print "    9    " + r1_ + "    " + r2_ + "    " + c.
+        //print "    9    " + r1_ + "    " + r2_ + "    " + c.
         local r1r2Th is 4 * r1r2 * sin(thetaR2) ^ 2.
-        local dr is r1_ - r2_.
-        local cSq is dr^2 + r1r2Th.
-        print "    10    " + dr + "    " + cSq + "    " + r1r2Th.
         local q is sqrt(r1r2) * cos(thetaR2) / s.
-        print "    8    " + r1r2 + "    " + s.
+        //print "    8    " + r1r2 + "    " + s.
         local muS is sqrt(mu * s / 2).
         local qSqFm1 is c / s.
         local rho is 0.
@@ -220,8 +214,8 @@
         local t is 4 * muS * tDelta / s ^ 2.
 
         local x is xLamb(q, qSqFm1, t, thetaR2).
-        print "    3    " + (thetaR2 * constant:degToRad) + "    " + q + "    " + x.
-        print "    11    " + (thetaR2 * constant:degToRad * 2) + "    " + qSqFm1 + "    " + t.
+        //print "    3    " + (thetaR2 * constant:degToRad) + "    " + q + "    " + x.
+        //print "    11    " + (thetaR2 * constant:degToRad * 2) + "    " + qSqFm1 + "    " + t.
         local tList is tLamb(q, qSqFm1, x, -1).
 
         local qzMinX is tList[1].
@@ -235,9 +229,9 @@
         local vT1 is vT2 / r1_.
         set   vT2 to vT2 / r2_.
 
-        print "    4    " + qzMinX + "    " + qzPlX + "    " + zPlQX.
-        print "    5    " + sig + "    " + rho.
-        print "    7    " + vr1 + "    " + vt1.
+        //print "    4    " + qzMinX + "    " + qzPlX + "    " + zPlQX.
+        //print "    5    " + sig + "    " + rho.
+        //print "    7    " + vr1 + "    " + vt1.
 
         local prograde is vCrs(r1, normal).
         local v1 is vR1 * r1:normalized + vT1 * prograde:normalized.

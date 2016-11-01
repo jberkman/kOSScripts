@@ -159,9 +159,10 @@ runOncePath("lib_dd").
 
         local a is 1 / (2 / r:mag - v:mag ^ 2 / body:mu).
         local i is arccos(h:y / h:mag).
+        if i = 180 { set i to 360 - i. }
 
         local loan is arccos(n:x / n:mag).
-        if n:y < 0 { set loan to 360 - loan. }
+        if n:z < 0 { set loan to 360 - loan. }
 
         local aop is arccos(clamp(n * e / n:mag / e:mag, -1, 1)).
         if e:y < 0 { set aop to 360 - aop. }
