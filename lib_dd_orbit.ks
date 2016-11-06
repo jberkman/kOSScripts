@@ -313,7 +313,7 @@ runOncePath("lib_dd").
         parameter self.
         local i is self["inclination"].
 
-        local u is self["trueAnomaly"] + self["argumentOfPeriapsis"].
+        local u is norDeg(self["trueAnomaly"] + self["argumentOfPeriapsis"]).
         local l_W is norDeg(arctan(cos(i) * sin(u) / cos(u))).
         // "If i < 90º, as for the major planets, (l – W) and u must lie in the
         // same quadrant."

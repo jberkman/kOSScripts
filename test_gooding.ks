@@ -21,9 +21,9 @@ local secToDay is 1 / dayToSec.
 local srcObt is DDOrbit["withOrbit"](src:obt).
 local dstObt is DDOrbit["withOrbit"](dst:obt).
 
-local interceptLongitude is DDOrbit["interceptLongitude"](src, dst) + 180.
-if norDeg(interceptLongitude - dstObt["longitude"](dstObt)) > 180 {
-    set interceptLongitude to norDeg(interceptLongitude - 180).
+local interceptLongitude is DDOrbit["interceptLongitude"](src, dst).
+if abs(interceptLongitude - srcObt["longitude"](dstObt)) < 90 {
+    set interceptLongitude to norDeg(interceptLongitude + 180).
 }
 print "intercept longitude: " + round(interceptLongitude, 1).
 

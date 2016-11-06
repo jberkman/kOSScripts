@@ -148,6 +148,16 @@ function install {
   copyPath("0:/" + source, target).
 }
 
+function vecLat {
+  parameter r.
+  return arcsin(r:y / r:mag).
+}
+
+function vecLong {
+  parameter r.
+  return norDeg(arctan2(r:z, r:x)).
+}
+
 function menu {
   parameter title, menuItems.
   //runLibGUIBox().
