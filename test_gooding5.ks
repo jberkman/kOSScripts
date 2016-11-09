@@ -6,28 +6,148 @@ clearVecDraws().
 runOncePath("lib_dd_orbit").
 runOncePath("lib_dd_gooding").
 
-local src is kerbin.
-local dst is moho.
+//local src is kerbin.
+//local dst is moho.
 //local src is ship.
 //local dst is minmus.
 
-local minToSec is 60.
-local hourToSec is 60 * minToSec.
-local dayToSec is 6 * hourToSec.
-
-local secToMin is 1 / minToSec.
-local secToHour is 1 / hourToSec.
-local secToDay is 1 / dayToSec.
-
-local srcObt is DDOrbit["withOrbit"](src:obt).
-local dstObt is DDOrbit["withOrbit"](dst:obt).
-
-local interceptLongitude is DDOrbit["interceptLongitude"](src:obt, dst:obt).
-local interceptTrueAnomaly is srcObt["trueAnomalyAtLongitude"](srcObt, interceptLongitude).
-if abs(interceptTrueAnomaly - srcObt["trueAnomaly"]) < 90 {
-    set interceptLongitude to norDeg(interceptLongitude + 180).
-    set interceptTrueAnomaly to srcObt["trueAnomalyAtLongitude"](srcObt, interceptLongitude).
+function days {
+    parameter seconds.
+    return round(seconds * DDConstant["secToDay"], 1).
 }
+
+function getWindow {
+    parameter src, dst.
+
+    local body is src:obt:body.
+    local srcObt is DDOrbit["withOrbit"](src:obt).
+    local dstObt is DDOrbit["withOrbit"](dst:obt).
+
+    local synodicPeriod is DDOrbit["synodicPeriod"](srcObt, dstObt).
+    local hohmannPeriod is false.
+    {
+        local a is body:radius + (src:obt:apoapsis + dst:obt:apoapsis) / 2.
+        set hohmannPeriod to 2 * constant:pi * sqrt(a ^ 3 / body:mu).
+    }
+
+    print "    syn: " + days(synodicPeriod) + "    hmn: " + days(hohmannPeriod).
+
+    local departure is 0.
+    local departureDelta is src:obt:period / 72.
+
+    local duration is false.
+    local durationDelta is dst:obt:period / 72.
+
+    local bestDV is 99999.
+
+    until departure > synodicPeriod {
+        local departureTime is time + departure.
+        local r1 is shipRawToSOIUniversal(positionAt(src, departureTime), body).
+        local v0 is rawToUniversal(velocityAt(src, departureTime):orbit).
+        set duration to departureDelta.
+        until duration > hohmannPeriod {
+            local r2 is shipRawToSOIUniversal(positionAt(dst, departureTime + duration), body).
+            if vAng(r1, r2) > 120 {
+                local vLamb is Gooding["vLamb"](body:mu, r1, r2, duration).
+                local v1 is vLamb[0].
+                local dV is v1 - v0.
+                if dV:mag < bestDV {
+                    set bestDV to dV:mag.
+                    print "    dep: " + days(departure) + "    dur: " + days(duration) + "    dV: " + round(dV:mag, 1).
+                }
+            }
+            set duration to duration + durationDelta.
+        }
+        set departure to departure + departureDelta.
+    }
+
+    print 1/0.
+    local mu is srcObt["body"]:mu.
+    local interceptLongitude is DDOrbit["interceptLongitude"](srcObt, dstObt).
+
+    local tInt is time.
+    local r2 is false.
+    {
+        local dstInterceptTrueAnomaly is dstObt["trueAnomalyAtLongitude"](dstObt, interceptLongitude).
+        set tInt to tInt + dstObt["secondsToTrueAnomaly"](dstObt, dstInterceptTrueAnomaly).
+
+        local tgtObt is dstObt["at"](dstObt, dstInterceptTrueAnomaly).
+        set r2 to tgtObt["position"](tgtObt).
+    }
+
+    local interceptTrueAnomaly is srcObt["trueAnomalyAtLongitude"](srcObt, interceptLongitude).
+    local sweepAngle is 240.
+    {
+        local trueAnomaly is srcObt["trueAnomaly"].
+        local windowStart is norDeg(interceptTrueAnomaly - sweepAngle).
+        local windowEnd is norDeg(windowStart + 120).
+        if windowStart < windowEnd {
+            if trueAnomaly > windowStart and trueAnomaly < windowEnd {
+                print "Transfer window already in progress.".
+                set sweepAngle to norDeg(interceptTrueAnomaly - trueAnomaly).
+            }
+        } else if trueAnomaly > windowStart or trueAnomaly < windowEnd {
+            print "Transfer window already in progress.".
+            set sweepAngle to norDeg(interceptTrueAnomaly - trueAnomaly).
+        }
+        print "    windowStart: " + windowStart.
+        print "      windowEnd: " + norDeg(windowStart + 120).
+        print "    trueAnomaly: " + trueAnomaly.
+        print "     sweepAngle: " + sweepAngle.    
+    }
+
+    local retDV is V(0, 0, 0).
+    local retT is 0.
+
+    until sweepAngle < 120 {
+        local trueAnomaly is norDeg(interceptTrueAnomaly - sweepAngle).
+        local tDelta is tInt - srcObt["secondsToTrueAnomaly"](srcObt, trueAnomaly).
+
+        local depObt is srcObt["at"](srcObt, trueAnomaly).
+        local v0 is depObt["velocity"](depObt).
+        local r1 is depObt["position"](depObt).
+
+        local vLamb is Gooding["vLamb"](mu, r1, r2, tDelta:seconds).
+        local v1 is vLamb[0].
+        local dV is v1 - v0.
+
+        if retT = 0 or dV:mag < retDV:mag {
+            set retT to tInt - tDelta.
+            set retDV to dV.
+            print " ".
+            print "    v: " + round(sweepAngle, 1).
+            print "    T: " + round(retT:seconds * DDConstant["secToDay"], 1).
+            print "   dV: " + round(retDV:mag, 1).
+        }
+
+        set sweepAngle to sweepAngle - 5.
+    }
+
+//        local vInf is v1 - v0.
+
+//    local tDelta is  + dstObt["period"](dstObt).
+//    if norDeg(interceptTrueAnomaly - srcObt["trueAnomaly"]) < 90 {
+//        set interceptLongitude to norDeg(interceptLongitude + 180).
+//        set interceptTrueAnomaly to srcObt["trueAnomalyAtLongitude"](srcObt, interceptLongitude).
+//    }
+//    local hohmannObt is srcObt["at"](srcObt, norDeg(interceptTrueAnomaly - 180)).
+//    local hohmannR1 is hohmannObt["radius"](hohmannObt).
+//    local hohmannSemiMajorAxis is (hohmannR1 + r2:mag) / 2.
+//    local hohmannDuration is constant:pi * sqrt(hohmannSemiMajorAxis ^ 3 / src:obt:body:mu).
+//    local hohmannDeparture is t2 - hohmannDuration.
+//    set tInt to tInt + dstObt["period"](dstObt).
+
+
+
+    //if norDeg(interceptTrueAnomaly - srcObt["trueAnomaly"]) < 90 {
+    //    set interceptLongitude to norDeg(interceptLongitude + 180).
+    //    set interceptTrueAnomaly to srcObt["trueAnomalyAtLongitude"](srcObt, interceptLongitude).
+    //}
+}
+
+getWindow(kerbin, moho).
+print 1/0.
+
 local r1 is srcObt["position"](srcObt).
 local v0 is srcObt["velocity"](srcObt).
 

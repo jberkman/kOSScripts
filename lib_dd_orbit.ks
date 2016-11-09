@@ -14,6 +14,7 @@ runOncePath("lib_dd").
         "meanAnomaly", orbitMeanAnomaly@,
         "interceptLongitude", orbitInterceptLongitude@,
         "phi", orbitPhi@,
+        "synodicPeriod", orbitSynodicPeriod@,
         "withOrbit", orbitWithOrbit@,
         "withMeanAnomaly", orbitWithMeanAnomaly@,
         "withTrueAnomaly", orbitWithTrueAnomaly@,
@@ -24,13 +25,13 @@ runOncePath("lib_dd").
     function orbitInterceptLongitude {
         parameter src, dst.
 
-        local l1 is src:obt:longitudeOfAscendingNode.
-        local l2 is dst:obt:longitudeOfAscendingNode.
+        local l1 is src["longitudeOfAscendingNode"].
+        local l2 is dst["longitudeOfAscendingNode"].
 
-        local cosi1 is cos(src:obt:inclination).
-        local sini1 is sin(src:obt:inclination).
-        local cosi2 is cos(dst:obt:inclination).
-        local sini2 is sin(dst:obt:inclination).
+        local cosi1 is cos(src["inclination"]).
+        local sini1 is sin(src["inclination"]).
+        local cosi2 is cos(dst["inclination"]).
+        local sini2 is sin(dst["inclination"]).
 
         function iter {
             parameter min, max, inc.
@@ -51,6 +52,11 @@ runOncePath("lib_dd").
 
         local x is iter(0, 180, 2.5).
         return iter(max(0, x - 2.5), min(x + 2.5, 180), 0.025).
+    }
+
+    function orbitSynodicPeriod {
+        parameter obt1, obt2.
+        return abs(1 / (1 / obt1["period"](obt1) - 1 / obt2["period"](obt2))).
     }
 
     function orbitTrueAnomaly {
