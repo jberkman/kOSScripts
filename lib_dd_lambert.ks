@@ -71,8 +71,8 @@ runOncePath("lib_dd_orbit").
         local dvInfDur is false.
 
         local i is 0.
-        local n is round(log10(depStep)).
-        until i > n {
+        local n is max(0, round(log10(depStep * DDConstant["secToMin"]))).
+        until depStep <= 5 {
             local departure is depMin.
             until departure > depMax {
                 local departureTime is t0 + departure.
