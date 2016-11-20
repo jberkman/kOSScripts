@@ -9,6 +9,7 @@ runOncePath("lib_dd").
 
 {
     global DDOrbit is lex(
+        "escapeBurn", orbitEscapeBurn@,
         "trueAnomaly", orbitTrueAnomaly@,
         "meanMotion", orbitMeanMotion@,
         "meanAnomaly", orbitMeanAnomaly@,
@@ -96,6 +97,51 @@ runOncePath("lib_dd").
     function orbitPhi {
         parameter r, v.
         return arccos((vcrs(r, v) / r:mag / v:mag):mag).
+    }
+
+    function orbitEscapeBurn {
+        parameter obt, vInf.
+
+        local longInf is vecLong(vInf).
+        local sObt is DDOrbit["withOrbit"](obt).
+        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf) + 180).
+
+        local prevDiff is 180.
+        local delta is 5.
+
+        local injObt is false.
+        local rInj is false.
+        local vInj is false.
+
+        local rInjVec is vecDraw(V(0, 0, 0), V(0, 0, 0), red, "rInj", 1, true, 0.2).
+        until false {
+            set injObt to sObt["at"](sObt, taInj).
+            set rInj to injObt["position"](injObt).
+            set rInjVec:vec to universalToRaw(rInj):normalized * 10.
+            local rInj_ is rInj:mag.
+
+            set vInj to sqrt(vInf:mag^2 + 2 * kerbin:mu / rInj_).
+            local EE is vInj^2 / 2 - kerbin:mu / rInj_.
+            local h is rInj_ * vInj.
+            local e is sqrt(1 + 2 * EE * h^2 / kerbin:mu^2).
+            local etaCalc is arccos(-1 / e).
+            local etaAng is vAng(vInf, rInj).
+            local diff is abs(etaCalc - etaAng).
+
+            print "    " + round(taInj, 1) + "    " + round(etaCalc, 1) + "    " + round(etaAng, 1) + "    " + round(diff, 4) + "    " + injObt["longitude"](injObt).
+
+            if diff < 0.01 { break. }
+            else if diff > prevDiff { set delta to -delta / 10. }
+            set prevDiff to diff.
+            set taInj to norDeg(taInj + delta).
+        }
+
+        local h is vCrs(vInf, rInj):normalized.
+        set vInj to vInj * (vCrs(rInj, h):normalized).
+
+        local vInj0 is injObt["velocity"](injObt).
+        local deltaV is vInj - vInj0.
+        return list(deltaV, taInj).
     }
 
     function createOrbit {
