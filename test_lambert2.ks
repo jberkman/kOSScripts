@@ -17,7 +17,7 @@ local dst is moho.
 //local dst is mun.
 
 local departureTime is time.
-local duration is 134 * DDConstant["dayToSec"].
+local duration is 135 * DDConstant["dayToSec"].
 print "duration: " + duration.
 
 local r1 is shipRawToSOIUniversal(positionAt(src, departureTime), src:body).
@@ -36,8 +36,6 @@ local taInj is escape[1].
 local xferObt is DDOrbit["withVectors"](src:body, r1, vInf).
 
 local sObt is DDOrbit["withOrbit"](obt).
-set sObt to sObt["at"](sObt, taInj).
-local rInj is sObt["position"](sObt).
 
 //print "    dV    " + deltaV.
 //print "    dV    " + round(deltaV:mag, 1).
@@ -45,7 +43,10 @@ local rInj is sObt["position"](sObt).
 local origin is V(0, 0, 0).
 
 //print "    t: " + sObt["secondsToTrueAnomaly"](sObt, taInj) * secToMin.
+
 set departureTime to departureTime + sObt["secondsToTrueAnomaly"](sObt, taInj).
+set sObt to sObt["at"](sObt, taInj).
+local rInj is sObt["position"](sObt).
 
 function addNode {
     parameter t, dV.
@@ -88,7 +89,7 @@ print "       Transfer apoapsis: " + round(xferObt["apoapsis"](xferObt) / 100000
 print "    Transfer Inclination: " + round(xferObt["inclination"], 2).
 print "          Transfer angle: " + round(vAng(r1, r2), 2).
 
-if false {
+if true {
 set r1 to universalToRaw(r1).
 set r2 to universalToRaw(r2).
 set v0 to universalToRaw(v0).
