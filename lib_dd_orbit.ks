@@ -104,15 +104,17 @@ runOncePath("lib_dd").
 
         local longInf is vecLong(vInf).
         local sObt is DDOrbit["withOrbit"](obt).
-        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf) + 180).
+        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf + 180)).
 
         local prevDiff is 180.
         local delta is 5.
+        if obt:inclination > 90 { set delta to -delta. }
 
         local injObt is false.
         local rInj is false.
         local vInj is false.
 
+        vecDraw(V(0, 0, 0), universalToRaw(vInf):normalized * 10, yellow, "vInf", 1, true, 0.2).
         local rInjVec is vecDraw(V(0, 0, 0), V(0, 0, 0), red, "rInj", 1, true, 0.2).
         until false {
             set injObt to sObt["at"](sObt, taInj).
@@ -133,6 +135,7 @@ runOncePath("lib_dd").
             if diff < 0.01 { break. }
             else if diff > prevDiff { set delta to -delta / 10. }
             set prevDiff to diff.
+            wait 0.2.
             set taInj to norDeg(taInj + delta).
         }
 
@@ -386,11 +389,12 @@ runOncePath("lib_dd").
 
     function getTrueAnomalyAtLongitude {
         parameter self, longitude.
-        local u is arctan(tan(longitude - self["longitudeOfAscendingNode"]) / cos(self["inclination"])).
-        if (longitude > 180) <> (u > 180) {
-            set u to u - 180.
-        }
-        return norDeg(u - self["argumentOfPeriapsis"]).
+        local l_w is norDeg(longitude - self["longitudeOfAscendingNode"]).
+        local u is norDeg(arctan2(tan(l_w), cos(self["inclination"]))).
+        local v is u - self["argumentOfPeriapsis"].
+        if (l_w > 180) <> (u > 180) { set v to v + 180. }
+        //print "    l_w: " + longitude + "    u: " + norDeg(u) + "    v: " + norDeg(v).
+        return norDeg(v).
     }
 
     function getPosition {
