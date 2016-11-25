@@ -58,12 +58,12 @@ runOncePath("lib_dd_orbit").
         local r1 is false.
         local r2 is false.
 
-        local depMin is -1.
+        local depMin is 0.
         local depMax is synodicPeriod.
         local depStep is src:obt:period / 72.
 
-        local durMin is hohmannPeriod / 3.
-        local durMax is durMin * 2.
+        local durMin is hohmannPeriod / 4.
+        local durMax is durMin * 3.
         local durStep is dst:obt:period / 72.
 
         local dvInf is false.
@@ -88,7 +88,15 @@ runOncePath("lib_dd_orbit").
                     if dvInfDep < 0 or departure <> depMin or duration <> durMin {
                         local r2 is shipRawToSOIUniversal(positionAt(dst, departureTime + duration), body).
                         if vAng(r1, r2) > 120 {
-                            local vLamb is Gooding["vLamb"](body:mu, r1, r2, duration).
+                            local vLamb is false.
+                            if vAng(r1, r2) > 177 {
+                                local a is (r1:mag + r2:mag) / 2.
+                                local v1 is v0:normalized * sqrt(body:mu * (2 / r1:mag - 1 / a)).
+                                local v2 is v1:normalized * sqrt(body:mu * (2 / r2:mag - 1 / a)).
+                                set vLamb to list(v1, v2).
+                            } else {
+                                set vLamb to Gooding["vLamb"](body:mu, r1, r2, duration).
+                            }
                             local dV is vLamb[0] - v0.
                             if dvInfDep < 0 or dV:mag < dvInf:mag {
                                 set dvInf to dV.
@@ -103,7 +111,9 @@ runOncePath("lib_dd_orbit").
                                 print days(duration)              + "      " at (solCol, solRow + 2).
                                 print round(dV2:mag, 1)           + "      " at (solCol, solRow + 3).
                                 print round(dV:mag + dV2:mag, 1)  + "      " at (solCol, solRow + 4).
+                                if dvInfDep < 0 { print 1/0. }
                            }
+                           if vAng(r1, r2) > 175 { print 1/0. }
                         }
                     }
                     set duration to duration + durStep.

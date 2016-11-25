@@ -4,14 +4,22 @@
 clearScreen.
 clearVecDraws().
 
+runOncePath("lib_dd").
 runOncePath("lib_dd_lambert").
 
-local src is kerbin.
+local src is body.
 //local src is minmus.
 //local src is ship.
 
-local dst is moho.
+//local dst is moho.
 //local dst is minmus.
 //local dst is mun.
+local dst is target.
 
 local window is Lambert["window"](src, dst).
+local departure is window["departure"]:seconds.
+set departure to time:seconds - departure.
+local duration is window["duration"].
+
+print "departure: " + round(departure * DDConstant["secToDay"], 1).
+print "duration: " + round(duration * DDConstant["secToDay"], 1).

@@ -8,23 +8,34 @@ runOncePath("lib_dd_gooding").
 runOncePath("lib_dd_orbit").
 
 {
-local src is kerbin.
+local src is body.
+local dst is target.
+
 //local src is minmus.
 //local src is ship.
 
-local dst is moho.
-//local dst is minmus.
+//local dst is moho.
+//local duration is 136.
+
+local durationDays is 270.
+local durationHours is 4.75.
+
 //local dst is mun.
 
+
+//local dst is duna.
+
 local departureTime is time.
-local duration is 135 * DDConstant["dayToSec"].
+local duration is durationDays * DDConstant["dayToSec"] + durationHours * DDConstant["hourToSec"].
 print "duration: " + duration.
 
 local r1 is shipRawToSOIUniversal(positionAt(src, departureTime), src:body).
-local r2 is shipRawToSOIUniversal(positionAt(dst, departureTIme + duration), src:body).
+local r2 is shipRawToSOIUniversal(positionAt(dst, departureTime + duration), src:body).
 local v0 is rawToUniversal(velocityAt(src, departureTime):orbit).
-
+print "angle: " + vAng(r1, r2).
+print 1/0.
 local vLamb is Gooding["vLamb"](src:body:mu, r1, r2, duration).
+print vLamb.
 local v1 is vLamb[0].
 local v2 is vLamb[1].
 local vInf is v1 - v0.
@@ -34,6 +45,7 @@ local deltaV is escape[0].
 local taInj is escape[1].
 
 local xferObt is DDOrbit["withVectors"](src:body, r1, vInf).
+print xferObt.
 
 local sObt is DDOrbit["withOrbit"](obt).
 

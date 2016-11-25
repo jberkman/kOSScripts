@@ -107,7 +107,7 @@ runOncePath("lib_dd").
         local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf + 180)).
 
         local prevDiff is 180.
-        local delta is 5.
+        local delta is 1.
         if obt:inclination > 90 { set delta to -delta. }
 
         local injObt is false.
@@ -134,8 +134,12 @@ runOncePath("lib_dd").
 
             if diff < 0.01 { break. }
             else if diff > prevDiff { set delta to -delta / 10. }
+            if abs(delta) < 0.0001 {
+                print "    delta: " + delta.
+                break.
+            }
             set prevDiff to diff.
-            wait 0.2.
+            //wait 0.2.
             set taInj to norDeg(taInj + delta).
         }
 
