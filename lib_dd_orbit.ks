@@ -6,6 +6,7 @@
 @lazyglobal off.
 
 runOncePath("lib_dd").
+runOncePath("lib_dd_roots").
 
 {
     global DDOrbit is lex(
@@ -34,25 +35,11 @@ runOncePath("lib_dd").
         local cosi2 is cos(dst["inclination"]).
         local sini2 is sin(dst["inclination"]).
 
-        function iter {
-            parameter min, max, inc.
-            local bestX is 99999.
-            local ret is -1.
-            local i is min.
-            until i >= max {
-                local x is sin(arctan(tan(i - l1) / cosi1)) * sini1.
-                set x to abs(x - sin(arctan(tan(i - l2) / cosi2)) * sini2).
-                if x < bestX {
-                    set bestX to x.
-                    set ret to i.
-                }
-                set i to i + inc.
-            }
-            return ret.
-        }
-
-        local x is iter(0, 180, 2.5).
-        return iter(max(0, x - 2.5), min(x + 2.5, 180), 0.025).
+        return Roots["goldenSection"](0, 180, Roots["epsilon"], {
+            parameter i.
+            local x is sin(arctan(tan(i - l1) / cosi1)) * sini1.
+            return abs(x - sin(arctan(tan(i - l2) / cosi2)) * sini2).
+        }).
     }
 
     function orbitSynodicPeriod {
@@ -67,12 +54,13 @@ runOncePath("lib_dd").
         set M to M * constant:degToRad.
         local E_ is 0.
         local x is 0.
+        local epsilon is Roots["epsilon"].
 
         until false {
             local fx is e * sin(x * constant:radToDeg) - x + M.
             local f_x is e * cos(x * constant:radToDeg) - 1.
             local x_ is x - fx / f_x.
-            if abs(x - x_) < 0.0001 { set E_ to x_. break. }
+            if abs(x - x_) < epsilon { set E_ to x_. break. }
             set x to x_.
         }
 
@@ -104,7 +92,7 @@ runOncePath("lib_dd").
 
         local longInf is vecLong(vInf).
         local sObt is DDOrbit["withOrbit"](obt).
-        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf + 180)).
+        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf)).
 
         local prevDiff is 180.
         local delta is 1.
@@ -116,8 +104,10 @@ runOncePath("lib_dd").
 
         vecDraw(V(0, 0, 0), universalToRaw(vInf):normalized * 10, yellow, "vInf", 1, true, 0.2).
         local rInjVec is vecDraw(V(0, 0, 0), V(0, 0, 0), red, "rInj", 1, true, 0.2).
-        until false {
-            set injObt to sObt["at"](sObt, taInj).
+        local epsilon is Roots["epsilon"].
+        set taInj to Roots["goldenSection"](taInj - 160, taInj + 160, 0.2, {
+            parameter taInj.
+            set injObt to sObt["at"](sObt, norDeg(taInj)).
             set rInj to injObt["position"](injObt).
             set rInjVec:vec to universalToRaw(rInj):normalized * 10.
             local rInj_ is rInj:mag.
@@ -129,19 +119,9 @@ runOncePath("lib_dd").
             local etaCalc is arccos(-1 / e).
             local etaAng is vAng(vInf, rInj).
             local diff is abs(etaCalc - etaAng).
-
             print "    " + round(taInj, 1) + "    " + round(etaCalc, 1) + "    " + round(etaAng, 1) + "    " + round(diff, 4) + "    " + injObt["longitude"](injObt).
-
-            if diff < 0.01 { break. }
-            else if diff > prevDiff { set delta to -delta / 10. }
-            if abs(delta) < 0.0001 {
-                print "    delta: " + delta.
-                break.
-            }
-            set prevDiff to diff.
-            //wait 0.2.
-            set taInj to norDeg(taInj + delta).
-        }
+            return diff.
+        }).
 
         local h is vCrs(vInf, rInj):normalized.
         set vInj to vInj * (vCrs(rInj, h):normalized).

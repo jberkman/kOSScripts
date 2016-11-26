@@ -1,4 +1,4 @@
-// Implementation of Gooding Lamber solver
+// Implementation of Gooding Lambert solver
 // http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1990CeMDA..48..145G&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf
 @lazyglobal off.
 clearScreen.
@@ -17,7 +17,7 @@ local dst is target.
 //local dst is moho.
 //local duration is 136.
 
-local durationDays is 270.
+local durationDays is 135.
 local durationHours is 4.75.
 
 //local dst is mun.
@@ -33,7 +33,7 @@ local r1 is shipRawToSOIUniversal(positionAt(src, departureTime), src:body).
 local r2 is shipRawToSOIUniversal(positionAt(dst, departureTime + duration), src:body).
 local v0 is rawToUniversal(velocityAt(src, departureTime):orbit).
 print "angle: " + vAng(r1, r2).
-print 1/0.
+//print 1/0.
 local vLamb is Gooding["vLamb"](src:body:mu, r1, r2, duration).
 print vLamb.
 local v1 is vLamb[0].
