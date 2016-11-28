@@ -92,7 +92,7 @@ runOncePath("lib_dd_roots").
 
         local longInf is vecLong(vInf).
         local sObt is DDOrbit["withOrbit"](obt).
-        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, longInf)).
+        local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, norDeg(longInf + 180))).
 
         local prevDiff is 180.
         local delta is 1.
@@ -105,7 +105,7 @@ runOncePath("lib_dd_roots").
         vecDraw(V(0, 0, 0), universalToRaw(vInf):normalized * 10, yellow, "vInf", 1, true, 0.2).
         local rInjVec is vecDraw(V(0, 0, 0), V(0, 0, 0), red, "rInj", 1, true, 0.2).
         local epsilon is Roots["epsilon"].
-        set taInj to Roots["goldenSection"](taInj - 160, taInj + 160, 0.2, {
+        set taInj to Roots["goldenSection"](taInj - 120, taInj + 120, 0.01, {
             parameter taInj.
             set injObt to sObt["at"](sObt, norDeg(taInj)).
             set rInj to injObt["position"](injObt).
