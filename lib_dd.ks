@@ -213,6 +213,21 @@ function orbitalVelocity {
   return sqrt(orbitable:body:mu * (2 / r - 1 / a)).  
 }
 
+function obtNormalVec {
+    parameter obj.
+    local b is obj:obt:body.
+    local r is obj:position - b:position.
+    local v is obj:velocity:orbit - b:velocity:orbit.
+    return vcrs(v, r):normalized.
+}
+
+function obtPlanarVec {
+    parameter obj, v.
+    local h is obtNormalVec(obj):normalized.
+    local t is vCrs(h, v:normalized):normalized.
+    return v:mag * vCrs(t, h):normalized.
+}
+
 local digits is lex("0", 0, "1", 1, "2", 2, "3", 3, "4", 4, "5", 5, "6", 6, "7", 7, "8", 8, "9", 9).
 function parseScalar {
   parameter s.

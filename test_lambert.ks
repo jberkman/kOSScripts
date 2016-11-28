@@ -17,8 +17,7 @@ local src is body.
 local dst is target.
 
 local window is Lambert["window"](src, dst).
-local departure is window["departure"]:seconds.
-set departure to time:seconds - departure.
+local departure is window["departure"] - time:seconds.
 local duration is window["duration"].
 
 print "departure: " + round(departure * DDConstant["secToDay"], 1).
