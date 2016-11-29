@@ -90,6 +90,7 @@ runOncePath("lib_dd_roots").
     function orbitEscapeBurn {
         parameter obt, vInf.
 
+        local mu is obt:body:mu.
         local longInf is vecLong(vInf).
         local sObt is DDOrbit["withOrbit"](obt).
         local taInj is norDeg(sObt["trueAnomalyAtLongitude"](sObt, norDeg(longInf + 180))).
@@ -98,37 +99,60 @@ runOncePath("lib_dd_roots").
         local delta is 1.
         if obt:inclination > 90 { set delta to -delta. }
 
-        local injObt is false.
-        local rInj is false.
-        local vInj is false.
+        //local injObt is false.
+        //local rInj is false.
+        //local vInj is false.
 
         vecDraw(V(0, 0, 0), universalToRaw(vInf):normalized * 10, yellow, "vInf", 1, true, 0.2).
         local rInjVec is vecDraw(V(0, 0, 0), V(0, 0, 0), red, "rInj", 1, true, 0.2).
         local epsilon is Roots["epsilon"].
-        set taInj to Roots["goldenSection"](taInj - 120, taInj + 120, 0.01, {
-            parameter taInj.
-            set injObt to sObt["at"](sObt, norDeg(taInj)).
-            set rInj to injObt["position"](injObt).
-            set rInjVec:vec to universalToRaw(rInj):normalized * 10.
-            local rInj_ is rInj:mag.
 
-            set vInj to sqrt(vInf:mag^2 + 2 * kerbin:mu / rInj_).
-            local EE is vInj^2 / 2 - kerbin:mu / rInj_.
+        function evalTA {
+            parameter taInj.
+            local injObt is sObt["at"](sObt, norDeg(taInj)).
+            local rInj is injObt["position"](injObt).
+            local vInj is sqrt(vInf:mag^2 + 2 * mu / rInj:mag).
+            set rInjVec:vec to universalToRaw(rInj):normalized * 10.
+            return list(injObt, rInj, vInj).
+        }
+
+        function getAngleDiff {
+            parameter taInj.
+            local args is evalTA(taInj).
+            local injObt is args[0].
+            local rInj is args[1].
+            local vInj is args[2].
+
+            local rInj_ is rInj:mag.
+            local EE is vInj^2 / 2 - mu / rInj_.
             local h is rInj_ * vInj.
-            local e is sqrt(1 + 2 * EE * h^2 / kerbin:mu^2).
+            local e is sqrt(1 + 2 * EE * h^2 / mu^2).
             local etaCalc is arccos(-1 / e).
             local etaAng is vAng(vInf, rInj).
-            local diff is abs(etaCalc - etaAng).
+            local diff is etaCalc - etaAng.
             print "    " + round(taInj, 1) + "    " + round(etaCalc, 1) + "    " + round(etaAng, 1) + "    " + round(diff, 4) + "    " + injObt["longitude"](injObt).
             return diff.
-        }).
+        }
 
-        local h is vCrs(vInf, rInj):normalized.
-        set vInj to vInj * (vCrs(rInj, h):normalized).
+        local minDV is 99999.
+        local ret is false.
+        for taInj in Roots["brents2"](taInj - 90, taInj + 90, 0.01, getAngleDiff@) {
+            local args is evalTA(taInj).
+            local injObt is args[0].
+            local rInj is args[1].
+            local vInj is args[2].
 
-        local vInj0 is injObt["velocity"](injObt).
-        local deltaV is vInj - vInj0.
-        return list(deltaV, taInj).
+            local h is vCrs(vInf, rInj):normalized.
+            set vInj to vInj * (vCrs(rInj, h):normalized).
+
+            local vInj0 is injObt["velocity"](injObt).
+            local deltaV is vInj - vInj0.
+            if deltaV:mag < minDV {
+                set minDV to deltaV:mag.
+                set ret to list(deltaV, norDeg(taInj)).
+            }
+        }
+        return ret.
     }
 
     function createOrbit {
@@ -200,11 +224,15 @@ runOncePath("lib_dd_roots").
         local i is arccos(h:y / h:mag).
         if i = 180 { set i to 360 - i. }
 
-        local loan is arccos(n:x / n:mag).
-        if n:z < 0 { set loan to 360 - loan. }
+        local loan is 0.
+        local aop is 0.
+        if n:mag <> 0 {
+            set loan to arccos(n:x / n:mag).
+            if n:z < 0 { set loan to 360 - loan. }
 
-        local aop is arccos(clamp(n * e / n:mag / e:mag, -1, 1)).
-        if e:y < 0 { set aop to 360 - aop. }
+            set aop to arccos(clamp(n * e / n:mag / e:mag, -1, 1)).
+            if e:y < 0 { set aop to 360 - aop. }
+        }
 
         local v is arccos((e * r) / e:mag / r:mag).
 

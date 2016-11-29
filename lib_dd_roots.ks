@@ -12,6 +12,7 @@
 
     global Roots is lex(
         "brents", getBrents@,
+        "brents2", getBrents2@,
         "epsilon", epsilon,
         "goldenSection", getGoldenSection@
     ).
@@ -22,7 +23,7 @@
         local fa is f(a).
         local fb is f(b).
 
-        if fa * fb >= 0 { print 1/0. }
+        if fa * fb > 0 { print 1/0. }
         if delta < 0 { print 1/0. }
 
         if abs(fa) < abs(fb) {
@@ -37,9 +38,8 @@
         local c is a.
         local d is false.
         local mflag is true.
-        until a - b = 0 {
+        until abs(a - b) < delta {
             //print "[ " + a + ", " + b + " ]".
-            if f(b) = 0 { return b. }
             local fc is f(c).
             local s is false.
             if fa <> fc and fb <> fc {
@@ -81,8 +81,24 @@
                 set fa to fb.
                 set fb to tmp.
             }
+            if fA = 0 { return a. }
+            if fB = 0 { return b. }
         }
-        return a.
+        return (a + b) / 2.
+    }
+
+    function getBrents2 {
+        parameter a, b, delta, f.
+        local fA is f(a).
+        local fB is f(b).
+        if fA * fB < 0 { return list(getBrents(a, b, delta, f)). }
+        local ret is list().
+        if abs(a - b) > delta {
+            local c is (a + b) / 2.
+            for i in getBrents2(a, c, delta, f) { ret:add(i). }
+            for i in getBrents2(c, b, delta, f) { ret:add(i). }
+        }
+        return ret.
     }
 
     function getGoldenSection {

@@ -77,11 +77,30 @@ runOncePath("lib_dd_roots").
                 //    set v1 to v0:normalized * sqrt(body:mu * (2 / r1:mag - 1 / a)).
                 //    set v2 to v1:normalized * sqrt(body:mu * (2 / r2:mag - 1 / a)).
                 //} else {
-                    local vLamb is Gooding["vLamb"](body:mu, r1, r2, duration).
-                    set v1 to vLamb[0].
-                    set v2 to vLamb[1].
-                //}
+                local vLamb is Gooding["vLamb"](body:mu, r1, r2, duration).
+                set v1 to vLamb[0].
+                set v2 to vLamb[1].
                 local dV is (v1 - v0):mag.
+
+                if vAng(r1, r2) < 179 {
+                    local r2Planar is rawToUniversal(obtPlanarVec(src, universalToRaw(r2))).
+                    local vLambPlanar is Gooding["vLamb"](body:mu, r1, r2Planar, duration).
+                    local dvPlanar is (vLambPlanar[1] - vLambPlanar[0]):mag.
+                    local planarOrbit is DDOrbit["withVectors"](src:body, r2Planar, vLambPlanar[1]).
+                    local trueAnomaly is norDeg(planarOrbit["trueAnomaly"] - 90).
+                    set planarOrbit to planarOrbit["at"](planarOrbit, trueAnomaly).
+                    local vi is planarOrbit["velocityMagnitude"](planarOrbit).
+                    local planeChangeDV is 2 * vi * sin(vAng(r2, r2Planar) / 2).
+                    set dvPlanar to dvPlanar + planeChangeDV.
+                    if dvPlanar < dV {
+                        //print "plane change: " + planeChangeDV.
+                        set dV to dvPlanar.
+                        set r2 to r2Planar.
+                        set v1 to vLambPlanar[0].
+                        set v2 to vLambPlanar[1].
+                    }
+                }
+
                 if dV < minDV {
                     set minDV to dV.
                     local v3 to rawToUniversal(velocityAt(dst, departure + duration):orbit).
