@@ -39,7 +39,7 @@
         local d is false.
         local mflag is true.
         until abs(a - b) < delta {
-            //print "[ " + a + ", " + b + " ]".
+            print "[ " + a + ", " + b + " ]".
             local fc is f(c).
             local s is false.
             if fa <> fc and fb <> fc {
@@ -89,14 +89,20 @@
 
     function getBrents2 {
         parameter a, b, delta, f.
-        local fA is f(a).
-        local fB is f(b).
-        if fA * fB < 0 { return list(getBrents(a, b, delta, f)). }
+        local n is 40.
+        local d is (b - a) / n.
+        local x is a.
+        local fx is f(a).
         local ret is list().
-        if abs(a - b) > delta {
-            local c is (a + b) / 2.
-            for i in getBrents2(a, c, delta, f) { ret:add(i). }
-            for i in getBrents2(c, b, delta, f) { ret:add(i). }
+        local i is 0.
+        until i = n {
+            local y is x + d.
+            local fy is f(y).
+            //print fx * fy.
+            if fx * fy < 0 { ret:add(getBrents(x, y, delta, f)). }
+            set x to y.
+            set fx to fy.
+            set i to i + 1.
         }
         return ret.
     }

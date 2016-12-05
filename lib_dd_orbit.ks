@@ -136,7 +136,8 @@ runOncePath("lib_dd_roots").
 
         local minDV is 99999.
         local ret is false.
-        for taInj in Roots["brents2"](taInj - 90, taInj + 90, 0.01, getAngleDiff@) {
+        print Roots["brents2"](taInj - 180, taInj + 180, 0.01, getAngleDiff@).
+        for taInj in Roots["brents2"](taInj - 180, taInj + 180, 0.01, getAngleDiff@) {
             local args is evalTA(taInj).
             local injObt is args[0].
             local rInj is args[1].
